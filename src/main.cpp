@@ -59,7 +59,7 @@ void MainWindow::Btn1_Callback()
         trigger_msg.data = false;
         Btn1_state = true;
     }
-    else if(Btn1_state == true && enable_disable_ == 1) // TODO_5 add more conditions
+    else if(Btn1_state == true && enable_disable_ == 1) // TODO_6 add more conditions
     {
         Btn1->setText("Start");
         Btn1->setStyleSheet("background-color: #00FF00; color: black;");
@@ -77,7 +77,7 @@ void MainWindow::Btn1_Callback()
 void MainWindow::Btn2_Callback()
 {
     trigger_msg.data = false;
-    //BPS publish?
+    // TODO_7 BPS publish?
 }
 
 void MainWindow::timer_Callback()
