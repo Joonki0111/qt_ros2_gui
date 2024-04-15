@@ -3,9 +3,9 @@
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent), Node("node")
 {
     Btn1_state = false;
-    ndt_score_ = 0;
     enable_disable_ = 0;
-
+    localization_accuracy_ = 0;
+    localization_accuracy_lateral_direction_ = 0;
     this->resize(300, 500); // TODO_1 : adjust size
 
     Btn1 = new QPushButton("Stop", this);
@@ -22,30 +22,51 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), Node("node")
     timer_->setInterval(100); // TODO_2 : interval speed
     connect(timer_, &QTimer::timeout, this, &MainWindow::timer_Callback);
 
-    ndt_frame_ = new QFrame(this);
-    ndt_frame_->setFrameShape(QFrame::Box);
-    ndt_frame_->setLineWidth(2);
-    ndt_frame_->setStyleSheet("background-color: red;");
-    ndt_frame_->setGeometry(0, 0, 180, 30);
+    localization_accuracy_frame_ = new QFrame(this);
+    localization_accuracy_frame_->setFrameShape(QFrame::Box);
+    localization_accuracy_frame_->setLineWidth(2);
+    localization_accuracy_frame_->setStyleSheet("background-color: red;");
+    localization_accuracy_frame_->setGeometry(0, 0, 250, 30);
     
-    ndt_label_ = new QLabel("NDT_matching score: ", this);
-    ndt_label_->setGeometry(3, 0, 200, 30);
+    localization_accuracy_label_ = new QLabel("localization_accuracy: ", this);
+    localization_accuracy_label_->setGeometry(3, 0, 250, 30);
+
+    localization_accuracy_lateral_direction_frame_ = new QFrame(this);
+    localization_accuracy_lateral_direction_frame_->setFrameShape(QFrame::Box);
+    localization_accuracy_lateral_direction_frame_->setLineWidth(2);
+    localization_accuracy_lateral_direction_frame_->setStyleSheet("background-color: red;");
+    localization_accuracy_lateral_direction_frame_->setGeometry(0, 31, 250, 30);
+
+    localization_accuracy_lateral_direction_label_ = new QLabel("localization_accuracy_LD: ", this);
+    localization_accuracy_lateral_direction_label_->setGeometry(3, 31, 250, 30);
 
     enable_disable_frame_ = new QFrame(this);
     enable_disable_frame_->setFrameShape(QFrame::Box);
     enable_disable_frame_->setLineWidth(2);
     enable_disable_frame_->setStyleSheet("background-color: red;");
-    enable_disable_frame_->setGeometry(0, 40, 180, 30);
+    enable_disable_frame_->setGeometry(0, 80, 180, 30);
     
     enable_disable_label_ = new QLabel("enable_disable: ", this);
-    enable_disable_label_->setGeometry(3, 40, 200, 30);
+    enable_disable_label_->setGeometry(3, 80, 200, 30);
 
     pub_trigger_ = this->create_publisher<std_msgs::msg::Bool>("/trigger",rclcpp::QoS(1));
 
-    sub_ndt_ = this->create_subscription<std_msgs::msg::Int64>("/ndt_temp",rclcpp::QoS(1),std::bind(
-        &MainWindow::NDT_Callback, this, std::placeholders::_1)); // TODO_3 : topic name, msg type
-    sub_enable_disable_ = this->create_subscription<std_msgs::msg::Bool>("/enable_disable",rclcpp::QoS(1),std::bind(
+    sub_localization_accuracy_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+        "/localization_accuracy", rclcpp::QoS(1), std::bind(
+            &MainWindow::localization_accuracy_Callback, this, std::placeholders::_1));
+    sub_enable_disable_ = this->create_subscription<std_msgs::msg::Bool>("/enable_disable", rclcpp::QoS(1), std::bind(
         &MainWindow::enable_disable_Callback, this, std::placeholders::_1)); // TODO_4 : topic name, msg type
+}
+
+void MainWindow::localization_accuracy_Callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+{
+    localization_accuracy_ = msg->data[0];
+    localization_accuracy_lateral_direction_ = msg->data[1];
+}
+
+void MainWindow::enable_disable_Callback(const std_msgs::msg::Bool::SharedPtr msg)
+{
+    enable_disable_ = msg->data;
 }
 
 void MainWindow::Btn1_Callback()
@@ -83,54 +104,55 @@ void MainWindow::Btn2_Callback()
 void MainWindow::timer_Callback()
 {   
     pub_trigger_->publish(trigger_msg);
-    const int& ndt_score = check_ndt_score(ndt_score_);
-    adjust_ndt_status(ndt_score);
+    adjust_localization_status(localization_accuracy_, localization_accuracy_lateral_direction_);
     adjust_enable_disable_status(enable_disable_);
 }
 
-void MainWindow::NDT_Callback(const std_msgs::msg::Int64::SharedPtr msg)
-{
-    ndt_score_ = msg->data;
-}
 
-void MainWindow::enable_disable_Callback(const std_msgs::msg::Bool::SharedPtr msg)
+void MainWindow::adjust_localization_status(
+    const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_)
 {
-    enable_disable_ = msg->data;
-}
-
-int MainWindow::check_ndt_score(const int& ndt_score_)
-{
-    if(ndt_score_ <= 1)
+    if(localization_accuracy_ > 0.2)
     {
-        return 0;
+        localization_accuracy_frame_->setStyleSheet("background-color: red;");
     }
-    else if(ndt_score_ > 1 && ndt_score_ < 3)
+    else if(localization_accuracy_ <= 0.2 && localization_accuracy_ > 0.15)
     {
-        return 1;
+        localization_accuracy_frame_->setStyleSheet("background-color: yellow;");
+    }
+    else if(localization_accuracy_ <= 0.15 && localization_accuracy_ > 0)
+    {
+        localization_accuracy_frame_->setStyleSheet("background-color: #00FF00;");
     }
     else
     {
-        return 2;
+        localization_accuracy_frame_->setStyleSheet("background-color: red;");
     }
-}
 
-void MainWindow::adjust_ndt_status(const int& ndt_score)
-{
-    if(ndt_score == 0)
+    if(localization_accuracy_lateral_direction_ > 0.2)
     {
-        ndt_frame_->setStyleSheet("background-color: red;");
+        localization_accuracy_lateral_direction_frame_->setStyleSheet("background-color: red;");
     }
-    else if(ndt_score == 1)
+    else if(localization_accuracy_lateral_direction_ <= 0.2 && localization_accuracy_lateral_direction_ > 0.15)
     {
-        ndt_frame_->setStyleSheet("background-color: yellow;");
+        localization_accuracy_lateral_direction_frame_->setStyleSheet("background-color: yellow;");
+    }
+    else if(localization_accuracy_lateral_direction_ <= 0.15 && localization_accuracy_lateral_direction_ > 0)
+    {
+        localization_accuracy_lateral_direction_frame_->setStyleSheet("background-color: #00FF00;");
     }
     else
     {
-        ndt_frame_->setStyleSheet("background-color: #00FF00;");
+        localization_accuracy_lateral_direction_frame_->setStyleSheet("background-color: red;");
     }
 
-    QString text = QString("NDT_matching score: %1").arg(ndt_score_);
-    ndt_label_->setText(text);
+    QString localization_accuracy_text = QString(
+        "localization_accuracy: %1").arg(localization_accuracy_);
+    localization_accuracy_label_->setText(localization_accuracy_text);
+
+    QString  localization_accuracy_lateral_direction_text = QString(
+        "localization_accuracy_LD: %1").arg(localization_accuracy_lateral_direction_);
+    localization_accuracy_lateral_direction_label_->setText(localization_accuracy_lateral_direction_text);
 }
 
 void MainWindow::adjust_enable_disable_status(const int& enable_disable)
