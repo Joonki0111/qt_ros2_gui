@@ -13,8 +13,27 @@ class MainWindow : public QWidget, public rclcpp::Node
 {
 public:
   MainWindow(QWidget *parent = nullptr);
+  std::vector<QFrame *> QFrame_vector;
+  std::vector<QLabel *> QLabel_vector;
 
 private:
+  struct Frame_info
+  {
+    int x;
+    int y;
+    int width;
+    int height;
+  };
+
+  struct Label_info
+  {
+    int x;
+    int y;
+    int width;
+    int height;
+    std::string text;
+  };
+
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_trigger_;
 
   rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sub_localization_accuracy_;
@@ -24,18 +43,19 @@ private:
   QPushButton *Btn2;
   QTimer *timer_;
 
-  QFrame *localization_accuracy_frame_;
-  QLabel *localization_accuracy_label_;
-  QFrame *localization_accuracy_lateral_direction_frame_;
-  QLabel *localization_accuracy_lateral_direction_label_;
+  Label_info localization_accuracy_label_;
+  Label_info localization_accuracy_lateral_direction_label_;
+  Label_info enable_disable_label_;
 
-  QFrame *enable_disable_frame_;
-  QLabel *enable_disable_label_;
+  Frame_info localization_accuracy_frame_;
+  Frame_info localization_accuracy_lateral_direction_frame_;
+  Frame_info enable_disable_frame_;
 
   bool Btn1_state;
   float localization_accuracy_;
   float localization_accuracy_lateral_direction_;
   bool enable_disable_;
+  int count;
 
   std_msgs::msg::Bool trigger_msg;
 
@@ -47,4 +67,7 @@ private:
   void adjust_localization_status(
     const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_);
   void adjust_enable_disable_status(const int& enable_disable);
+  void create_frame(const int& x, const int& y, const int& width, const int& height);
+  void create_label(const int& x, const int& y, const int& width,
+    const int& height, const std::string& text);
 };
