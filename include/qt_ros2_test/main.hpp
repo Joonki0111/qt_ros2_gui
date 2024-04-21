@@ -1,7 +1,9 @@
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/int64.hpp"
 #include "std_msgs/msg/bool.hpp"
-#include <std_msgs/msg/float32_multi_array.hpp>
+#include "std_msgs/msg/float32_multi_array.hpp"
+#include "roscco_msgs/msg/roscco_status.hpp"
+#include "roscco_msgs/msg/enable_disable.hpp"
 #include <QApplication>
 #include <QWidget>
 #include <QPushButton>
@@ -15,6 +17,10 @@ public:
   MainWindow(QWidget *parent = nullptr);
   std::vector<QFrame *> QFrame_vector;
   std::vector<QLabel *> QLabel_vector;
+  std::vector<QPushButton *> QPushButton_vector;
+  int label_count;
+  int frame_count;
+  int btn_count;
 
 private:
   struct Frame_info
@@ -35,39 +41,60 @@ private:
   };
 
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_trigger_;
+  rclcpp::Publisher<roscco_msgs::msg::EnableDisable>::SharedPtr pub_enable_disable_;
 
   rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr sub_localization_accuracy_;
-  rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr sub_enable_disable_;
+  rclcpp::Subscription<roscco_msgs::msg::RosccoStatus>::SharedPtr sub_roscco_status_;
 
-  QPushButton *Btn1;
-  QPushButton *Btn2;
   QTimer *timer_;
 
-  Label_info localization_accuracy_label_;
-  Label_info localization_accuracy_lateral_direction_label_;
-  Label_info enable_disable_label_;
+  //btn can use the same structure(Label_info)
+  Label_info engage_btn_;
+  Label_info estop_btn_;
+  Label_info enable_pub_btn_;
+  Label_info disable_pub_btn_;
 
   Frame_info localization_accuracy_frame_;
   Frame_info localization_accuracy_lateral_direction_frame_;
-  Frame_info enable_disable_frame_;
+  Frame_info steering_frame_;
+  Frame_info brake_frame_;
+  Frame_info throttle_frame_;
 
-  bool Btn1_state;
+  Label_info localization_accuracy_label_;
+  Label_info localization_accuracy_lateral_direction_label_;
+  Label_info roscco_label_;
+  Label_info steering_label_;
+  Label_info brake_label_;
+  Label_info throttle_label_;
+
+
+  int main_Btn_state;
   float localization_accuracy_;
   float localization_accuracy_lateral_direction_;
-  bool enable_disable_;
-  int count;
-
+  bool brake_enabled;
+  bool steering_enabled;
+  bool throttle_enabled;
+  int roscco_changed;
+  int roscco_status;
+  int roscco_status_;
+  bool estop_enabled_;
+  
   std_msgs::msg::Bool trigger_msg;
 
   void timer_Callback();
-  void Btn1_Callback();
-  void Btn2_Callback();
+  void main_Btn_state_Callback();
+  bool Estop_Btn_Callback();
+  void enable_pub_Btn_Callback();
+  void disable_pub_Btn_Callback();
   void localization_accuracy_Callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
-  void enable_disable_Callback(const std_msgs::msg::Bool::SharedPtr msg);
+  void roscco_status_Callback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg);
   void adjust_localization_status(
     const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_);
-  void adjust_enable_disable_status(const int& enable_disable);
+  void adjust_roscco_status(
+    const bool& steering_enabled, const bool& brake_enabled, const bool& throttle_enabled);
   void create_frame(const int& x, const int& y, const int& width, const int& height);
   void create_label(const int& x, const int& y, const int& width,
+    const int& height, const std::string& text);
+  void create_btn(const int& x, const int& y, const int& width,
     const int& height, const std::string& text);
 };

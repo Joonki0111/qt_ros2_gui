@@ -10,6 +10,7 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(roscco_msgs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
@@ -23,6 +24,7 @@ ament_target_dependencies(
     main
     rclcpp
     std_msgs 
+    roscco_msgs
     Qt5Core
     Qt5Widgets
 )
