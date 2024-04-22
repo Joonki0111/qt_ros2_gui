@@ -5,8 +5,8 @@
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent), Node("node")
 {
     main_Btn_state = 0;
-    steering_enabled = false;
     brake_enabled = false;
+    steering_enabled = false;
     throttle_enabled = false;
     localization_accuracy_ = 0;
     localization_accuracy_lateral_direction_ = 0;
@@ -16,7 +16,6 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), Node("node")
     roscco_changed = 0;
     roscco_status = 0;
     roscco_status_ = 0;
-    estop_enabled_ = false;
 
     engage_btn_ = {0, 700, 150, 100, "stop"};
     estop_btn_ = {150, 700, 150, 100, "Estop"};
@@ -36,7 +35,12 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent), Node("node")
     steering_label_ = {3, 110, 200, 30, "steering: "};
     throttle_label_ = {3, 170, 200, 30, "throttle: "};
 
-    this->resize(600, 800); // TODO_1 : adjust size
+    this->resize(600, 800);
+
+    QRect screenGeometry = QApplication::desktop()->screenGeometry();
+    program_x_ = screenGeometry.width() - this->width();
+    program_y_ = 0;
+    this->move(program_x_, program_y_);
 
     timer_ = new QTimer(this);
     timer_->setInterval(20); // TODO_2 : interval speed
@@ -124,11 +128,12 @@ void MainWindow::roscco_status_Callback(const roscco_msgs::msg::RosccoStatus::Sh
 
     roscco_status = brake_enabled + steering_enabled + throttle_enabled;
 
-    RCLCPP_INFO(rclcpp::get_logger("test"),"roscco_status: %d roscco_status_: %d roscco_changed: %d", roscco_status, roscco_status_, roscco_changed);
-
-    if(roscco_status_ != roscco_status)
+    if(main_Btn_state > 0)
     {
-        roscco_changed ++;
+        if(roscco_status_ != roscco_status)
+        {
+            roscco_changed ++;
+        }
     }
 
     roscco_status_ = roscco_status;
@@ -158,7 +163,7 @@ void MainWindow::main_Btn_state_Callback()
     }
     else if(main_Btn_state == 2) // TODO_6 add more conditions
     {
-        roscco_changed = -1;
+        roscco_changed = 0;
         main_Btn_state = -1;
         QPushButton_vector[0]->setText("stop");
         QPushButton_vector[0]->setStyleSheet("background-color: red; color: black;");
@@ -169,18 +174,10 @@ void MainWindow::main_Btn_state_Callback()
     }
 }
 
-bool MainWindow::Estop_Btn_Callback()
+void MainWindow::Estop_Btn_Callback()
 {
-    if (main_Btn_state == 0 && QPushButton_vector[0]->styleSheet().contains("background-color: red", Qt::CaseInsensitive))
-    {
-        return false;
-    }
-    else
-    {
-        main_Btn_state = 2;
-        MainWindow::main_Btn_state_Callback();
-        return true;
-    }
+    main_Btn_state = 2;
+    MainWindow::main_Btn_state_Callback();
 }
 
 void MainWindow::enable_pub_Btn_Callback()
@@ -201,6 +198,7 @@ void MainWindow::disable_pub_Btn_Callback()
 void MainWindow::timer_Callback()
 {   
     pub_trigger_->publish(trigger_msg);
+
     if(roscco_changed == 2)
     {
         main_Btn_state = 2;
@@ -310,6 +308,8 @@ void MainWindow::create_frame(const int& x, const int& y, const int& width, cons
     newFrame->show();
     QFrame_vector.push_back(newFrame);
 
+    RCLCPP_INFO(rclcpp::get_logger("create_frame"),"%p", newFrame);
+
     frame_count ++;
 }
 
@@ -324,6 +324,9 @@ void MainWindow::create_label(const int& x, const int& y, const int& width,
     
     newLabel->show();
     QLabel_vector.push_back(newLabel);
+
+    RCLCPP_INFO(rclcpp::get_logger("create_label"),"%p", newLabel);
+
     label_count ++;
 }
 
@@ -339,6 +342,9 @@ void MainWindow::create_btn(const int& x, const int& y, const int& width,
     
     Btn->show();
     QPushButton_vector.push_back(Btn);
+
+    RCLCPP_INFO(rclcpp::get_logger("create_btn"),"%p", Btn);
+
     btn_count ++;
 }
 
@@ -354,21 +360,40 @@ int main(int argc, char **argv)
     std::thread([&] {
         rclcpp::spin(node);
         rclcpp::shutdown();
-        for(int i = 0; i < node->frame_count; i++)
+        
+        for(int i = 0; i < sizeof(node->QFrame_vector); i++)
         {
-            delete node->QFrame_vector[i];
+            RCLCPP_INFO(rclcpp::get_logger("before_delete_QFrame_vector"),"%p", node->QFrame_vector[i]);
         }
-        for(int i = 0; i < node->label_count; i++)
+        // for(int i = 0; i < sizeof(node->QLabel_vector); i++)
+        // {
+        //     RCLCPP_INFO(rclcpp::get_logger("QLabel_vector"),"%p", node->QLabel_vector[i]);
+        // }
+        // for(int i = 0; i <sizeof(node->QPushButton_vector); i++)
+        // {
+        //     RCLCPP_INFO(rclcpp::get_logger("QPushButton_vector"),"%p", node->QPushButton_vector[i]);
+        // }
+        
+        // for(int i = 0; i < node->frame_count; i++)
+        // {
+        //     delete node->QFrame_vector[i];
+        // }
+        // for(int i = 0; i < node->label_count; i++)
+        // {
+        //     delete node->QLabel_vector[i];
+        // }
+        // for(int i = 0; i < node->btn_count; i++)
+        // {
+        //     delete node->QPushButton_vector[i];
+        // }
+
+        //3 2 0
+        delete node->QFrame_vector[0];
+
+        for(int i = 0; i < sizeof(node->QFrame_vector); i++)
         {
-            delete node->QLabel_vector[i];
+            RCLCPP_INFO(rclcpp::get_logger("after_delete_QFrame_vector"),"%p", node->QFrame_vector[i]);
         }
-        for(int i = 0; i < node->btn_count; i++)
-        {
-            delete node->QPushButton_vector[i];
-        }
-        node->QFrame_vector.clear();
-        node->QLabel_vector.clear();
-        node->QPushButton_vector.clear();
     }).detach();
     return app.exec();
 }

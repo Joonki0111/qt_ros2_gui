@@ -10,6 +10,7 @@
 #include <QTimer>
 #include <QLabel>
 #include <QFrame>
+#include <QDesktopWidget>
 
 class MainWindow : public QWidget, public rclcpp::Node
 {
@@ -77,13 +78,14 @@ private:
   int roscco_changed;
   int roscco_status;
   int roscco_status_;
-  bool estop_enabled_;
+  int program_x_;
+  int program_y_;
   
   std_msgs::msg::Bool trigger_msg;
 
   void timer_Callback();
   void main_Btn_state_Callback();
-  bool Estop_Btn_Callback();
+  void Estop_Btn_Callback();
   void enable_pub_Btn_Callback();
   void disable_pub_Btn_Callback();
   void localization_accuracy_Callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
