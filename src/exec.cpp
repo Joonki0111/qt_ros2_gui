@@ -12,14 +12,14 @@ int main(int argc, char* argv[])
 
     rclcpp::init(argc, argv);
 
-    std::shared_ptr<Ros2> Ros2_obj = std::make_shared<Ros2>();
-    std::shared_ptr<Qtmain> Qtmain_obj = std::make_shared<Qtmain>(Ros2_obj);
+    std::shared_ptr<ROS2> ROS2_obj = std::make_shared<ROS2>();
+    std::shared_ptr<Qtmain> Qtmain_obj = std::make_shared<Qtmain>(ROS2_obj);
 
     app.processEvents();
     Qtmain_obj->show();
 
     rclcpp::executors::MultiThreadedExecutor exec;
-    exec.add_node(Ros2_obj);
+    exec.add_node(ROS2_obj);
 
     while (rclcpp::ok())
     {
@@ -29,6 +29,6 @@ int main(int argc, char* argv[])
 
     signal(SIGINT, siginthandler);
 
-    exec.remove_node(Ros2_obj);
+    exec.remove_node(ROS2_obj);
     rclcpp::shutdown();
 }

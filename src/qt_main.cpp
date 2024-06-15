@@ -2,7 +2,7 @@
 
 // RCLCPP_INFO(rclcpp::get_logger("test"),"%d", main_Btn_state);
 
-Qtmain::Qtmain(const std::shared_ptr<Ros2>& ros2_node_, QWidget *parent_) : QWidget(parent_), ros2_node(ros2_node_)
+Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWidget(parent_), ros2_node(ros2_node_)
 {
     label_count = 0;
     frame_count = 0;
@@ -11,28 +11,28 @@ Qtmain::Qtmain(const std::shared_ptr<Ros2>& ros2_node_, QWidget *parent_) : QWid
     enable_control_btn_count = false;
     twist_controller_btn_count = false;
     roscco_enable_btn_Callback_count = false;
-    can_obj = std::make_shared<CAN_Interface>();
 
     twist_controller_btn_ = {0, 700, 150, 100, "[TwistController] \n Disable Control"};
     enable_control_btn_ = {150, 700, 150, 100, "[Autoware] \n Disable Control"};
     enable_pub_btn_ = {300, 700, 150, 100, "[Roscco] \n Enable"};
     disable_pub_btn_ = {450, 700, 150, 100, "[Roscco] \n Disable"};
 
-    localization_accuracy_frame_ = {0, 0, 250, 30};
-    localization_accuracy_lateral_direction_frame_ = {0, 31, 250, 30};
-    brake_frame_ = {80, 110, 55, 30};
-    steering_frame_ = {80, 140, 55, 30};
-    throttle_frame_ = {80, 170, 55, 30};
+    localization_accuracy_frame_ = {0, 31, 250, 30};
+    localization_accuracy_lateral_direction_frame_ = {0, 61, 250, 30};
+    brake_frame_ = {80, 140, 55, 30};
+    steering_frame_ = {80, 170, 55, 30};
+    throttle_frame_ = {80, 200, 55, 30};
 
-    localization_accuracy_label_ = {3, 0, 250, 30, "localization_accuracy: "};
-    localization_accuracy_lateral_direction_label_ = {3, 31, 250, 30, "localization_accuracy_LD: "};
-    roscco_label_ = {3, 80, 200, 30, "[roscco]"};
-    brake_label_ = {3, 110, 50, 30, "Brake:"};
-    steering_label_ = {3, 140, 70, 30, "Steering:"};
-    throttle_label_ = {3, 170, 70, 30, "Throttle:"};
-    brake_status_label_ = {85, 110, 200, 30, ""};
-    steering_status_label_ = {85, 140, 200, 30, ""};
-    throttle_status_label_ = {85, 170, 200, 30, ""};
+    autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
+    localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
+    localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
+    roscco_label_ = {3, 110, 200, 30, "[ROSCCO]"};
+    brake_label_ = {3, 140, 50, 30, "Brake:"};
+    steering_label_ = {3, 170, 70, 30, "Steering:"};
+    throttle_label_ = {3, 200, 70, 30, "Throttle:"};
+    brake_status_label_ = {85, 140, 200, 30, "0"};
+    steering_status_label_ = {85, 170, 200, 30, "0"};
+    throttle_status_label_ = {85, 200, 200, 30, "0"};
 
     this->resize(600, 800);
 
@@ -93,14 +93,14 @@ Qtmain::Qtmain(const std::shared_ptr<Ros2>& ros2_node_, QWidget *parent_) : QWid
     create_label(roscco_label_.x, roscco_label_.y, 
                     roscco_label_.width, roscco_label_.height, roscco_label_.text);
     //QLabel_vector[3]
-    create_label(brake_status_label_.x, brake_label_.y, 
-                    brake_label_.width, brake_label_.height, brake_label_.text);    
+    create_label(brake_status_label_.x, brake_status_label_.y, 
+                    brake_status_label_.width, brake_status_label_.height, brake_status_label_.text);    
     //QLabel_vector[4]
-    create_label(steering_status_label_.x, steering_label_.y, 
-                    steering_label_.width, steering_label_.height, steering_label_.text);    
+    create_label(steering_status_label_.x, steering_status_label_.y, 
+                    steering_status_label_.width, steering_status_label_.height, steering_status_label_.text);    
     //QLabel_vector[5]
-    create_label(throttle_status_label_.x, throttle_label_.y, 
-                    throttle_label_.width, throttle_label_.height, throttle_label_.text);
+    create_label(throttle_status_label_.x, throttle_status_label_.y, 
+                    throttle_status_label_.width, throttle_status_label_.height, throttle_status_label_.text);
     //QLabel_vector[6]
     create_label(brake_label_.x, brake_label_.y, 
                     brake_label_.width, brake_label_.height, brake_label_.text);    
@@ -110,7 +110,9 @@ Qtmain::Qtmain(const std::shared_ptr<Ros2>& ros2_node_, QWidget *parent_) : QWid
     //QLabel_vector[8]
     create_label(throttle_label_.x, throttle_label_.y, 
                     throttle_label_.width, throttle_label_.height, throttle_label_.text);
-    
+    //QLabel_vector[9]
+    create_label(autoware_label_.x, autoware_label_.y, 
+                    autoware_label_.width, autoware_label_.height, autoware_label_.text);
     roscco_disable_btn_Callback();
     timer_->start();
 }
@@ -164,16 +166,18 @@ void Qtmain::roscco_disable_btn_Callback()
 
 void Qtmain::timer_Callback()
 {   
-    bool *roscco_status = can_obj->read_roscco_status();
-    adjust_roscco_status(roscco_status);
-    if(check_roscco_status_change(roscco_status,roscco_enable_btn_Callback_count))
-    {
-        enable_control_btn_count = true;
-        twist_controller_btn_Callback();
-    }
+    float* roscco_cmd = ros2_node->get_roscco_cmd();
+    update_roscco_cmd(roscco_cmd);
 }
 
-void Qtmain::adjust_localization_status(
+void Qtmain::update_roscco_cmd(float* roscco_cmd)
+{
+    QLabel_vector[3]->setText(QString("%1").arg(roscco_cmd[0]));
+    QLabel_vector[4]->setText(QString("%1").arg(roscco_cmd[1]));
+    QLabel_vector[5]->setText(QString("%1").arg(roscco_cmd[2]));
+}
+
+void Qtmain::update_localization_status(
     const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_)
 {
     if(localization_accuracy_ > 0.2)
@@ -218,47 +222,13 @@ void Qtmain::adjust_localization_status(
     QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
 }
 
-void Qtmain::adjust_roscco_status(const bool *roscco_status)
-{
-    for(int i = 0; i < 3; i++)
-    {
-        if(*(roscco_status+i) == true)
-        {
-            QFrame_vector[2+i]->setStyleSheet("background-color: #00FF00;");
-            QLabel_vector[3+i]->setText("true");
-        }
-        else
-        {
-            QFrame_vector[2+i]->setStyleSheet("background-color: red;");
-            QLabel_vector[3+i]->setText("false");
-        }
-    }        
-}
-
-bool Qtmain::check_roscco_status_change(const bool *roscco_status, 
-    const bool roscco_enable_btn_Callback_count)
-{
-    bool changed = false;
-
-    for(int i = 0; i < 3; i++)
-    {
-        if(roscco_status_prev[i] != *(roscco_status+i) && roscco_enable_btn_Callback_count)
-        {
-            changed = true;
-        }
-
-        roscco_status_prev[i] = *(roscco_status+i);
-    }
-    return changed;
-}
-
 void Qtmain::create_frame(const int& x, const int& y, const int& width, const int& height)
 {
     QFrame *newFrame = new QFrame(this);
 
     newFrame->setGeometry(x, y, width, height);
     newFrame->setLineWidth(2);
-    newFrame->setStyleSheet("background-color: red;");
+    newFrame->setStyleSheet("background-color: white;");
     newFrame->setFrameShape(QFrame::Box);
     
     newFrame->show();

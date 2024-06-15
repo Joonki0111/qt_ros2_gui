@@ -1,5 +1,4 @@
 #include "qt_ros2_test/ros2_main.hpp"
-#include "qt_ros2_test/can_interface.hpp"
 #include <QApplication>
 #include <QWidget>
 #include <QPushButton>
@@ -7,17 +6,11 @@
 #include <QLabel>
 #include <QFrame>
 #include <QDesktopWidget>
-#include <linux/can.h>
-#include <linux/can/raw.h>
-#include <sys/socket.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
-#include <unistd.h>
 
 class Qtmain : public QWidget
 {
 public:
-  explicit Qtmain(const std::shared_ptr<Ros2>& ros2_node, QWidget* parent = nullptr);
+  explicit Qtmain(const std::shared_ptr<ROS2>& ros2_node, QWidget* parent = nullptr);
 
   std::vector<QFrame *> QFrame_vector;
   std::vector<QLabel *> QLabel_vector;
@@ -44,8 +37,7 @@ private:
     std::string text;
   };
 
-  const std::shared_ptr<Ros2> ros2_node;
-  std::shared_ptr<CAN_Interface> can_obj;
+  const std::shared_ptr<ROS2> ros2_node;
   bool enable_control_btn_count;
   bool twist_controller_btn_count;
   bool roscco_status_prev[3];
@@ -66,6 +58,7 @@ private:
   Frame_info brake_frame_;
   Frame_info throttle_frame_;
 
+  Label_info autoware_label_;
   Label_info localization_accuracy_label_;
   Label_info localization_accuracy_lateral_direction_label_;
   Label_info roscco_label_;
@@ -81,7 +74,8 @@ private:
   void enable_control_btn_Callback();
   void roscco_enable_btn_Callback();
   void roscco_disable_btn_Callback();
-  void adjust_localization_status(
+  void update_roscco_cmd(float* roscco_cmd);
+  void update_localization_status(
     const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_);
   void adjust_roscco_status(const bool *roscco_status);
   bool check_roscco_status_change(const bool *roscco_status, const bool roscco_enable_btn_Callback_count);
