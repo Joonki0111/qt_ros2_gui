@@ -24,6 +24,8 @@ ROS2::ROS2() : Node("node")
     brake_position = 0;
     steering_torque = 0;
     throttle_position = 0;
+    localization_accuracy_ = 0;
+    localization_accuracy_lateral_direction_ = 0;
 }
 
 void ROS2::timer_callback()
@@ -34,8 +36,8 @@ void ROS2::timer_callback()
 
 void ROS2::localization_accuracy_Callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
 {
-    localization_accuracy_ = msg->data[0];
-    localization_accuracy_lateral_direction_ = msg->data[1];
+    localization_accuracy_ = std::round(msg->data[0] * 1000.0) / 1000.0;
+    localization_accuracy_lateral_direction_ = std::round(msg->data[1] * 1000.0) / 1000.0;
 }
 
 void ROS2::pub_roscco_enable()
@@ -82,4 +84,12 @@ float* ROS2::get_roscco_cmd()
     roscco_cmd[1] = steering_torque;
     roscco_cmd[2] = throttle_position;
     return roscco_cmd;
+}
+
+float* ROS2::get_localization_accuracy()
+{
+    static float localization_status[2];
+    localization_status[0] = localization_accuracy_;
+    localization_status[1] = localization_accuracy_lateral_direction_;
+    return localization_status;
 }

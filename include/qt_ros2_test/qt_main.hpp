@@ -74,9 +74,8 @@ private:
   void enable_control_btn_Callback();
   void roscco_enable_btn_Callback();
   void roscco_disable_btn_Callback();
-  void update_roscco_cmd(float* roscco_cmd);
-  void update_localization_status(
-    const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_);
+  void update_roscco_cmd_monitor(float* roscco_cmd);
+  void update_localization_monitor(float* localization_accuracy);
   void adjust_roscco_status(const bool *roscco_status);
   bool check_roscco_status_change(const bool *roscco_status, const bool roscco_enable_btn_Callback_count);
   void create_frame(const int& x, const int& y, const int& width, const int& height);

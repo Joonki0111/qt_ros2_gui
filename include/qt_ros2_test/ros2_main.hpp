@@ -20,6 +20,7 @@ public:
   void update_autoware_control(const bool &data);
   void update_twist_controller_trigger(const bool &data);
   float* get_roscco_cmd();
+  float* get_localization_accuracy();
 
 private:
   rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_trigger_;

@@ -167,28 +167,30 @@ void Qtmain::roscco_disable_btn_Callback()
 void Qtmain::timer_Callback()
 {   
     float* roscco_cmd = ros2_node->get_roscco_cmd();
-    update_roscco_cmd(roscco_cmd);
+    update_roscco_cmd_monitor(roscco_cmd);
+    float* localization_accuracy = ros2_node->get_localization_accuracy();
+    update_localization_monitor(localization_accuracy);
 }
 
-void Qtmain::update_roscco_cmd(float* roscco_cmd)
+void Qtmain::update_roscco_cmd_monitor(float* roscco_cmd)
 {
     QLabel_vector[3]->setText(QString("%1").arg(roscco_cmd[0]));
     QLabel_vector[4]->setText(QString("%1").arg(roscco_cmd[1]));
     QLabel_vector[5]->setText(QString("%1").arg(roscco_cmd[2]));
 }
 
-void Qtmain::update_localization_status(
-    const float& localization_accuracy_, const float& localization_accuracy_lateral_direction_)
+void Qtmain::update_localization_monitor(
+    float* localization_accuracy)
 {
-    if(localization_accuracy_ > 0.2)
+    if(localization_accuracy[0] > 0.15)
     {
         QFrame_vector[0]->setStyleSheet("background-color: red;");
     }
-    else if(localization_accuracy_ <= 0.2 && localization_accuracy_ > 0.15)
+    else if(localization_accuracy[0] <= 0.15 && localization_accuracy[0] > 0.1)
     {
         QFrame_vector[0]->setStyleSheet("background-color: yellow;");
     }
-    else if(localization_accuracy_ <= 0.15 && localization_accuracy_ > 0)
+    else if(localization_accuracy[0] <= 0.1 && localization_accuracy[0] > 0)
     {
         QFrame_vector[0]->setStyleSheet("background-color: #00FF00;");
     }
@@ -197,15 +199,15 @@ void Qtmain::update_localization_status(
         QFrame_vector[0]->setStyleSheet("background-color: red;");
     }
 
-    if(localization_accuracy_lateral_direction_ > 0.2)
+    if(localization_accuracy[1] > 0.15)
     {
         QFrame_vector[1]->setStyleSheet("background-color: red;");
     }
-    else if(localization_accuracy_lateral_direction_ <= 0.2 && localization_accuracy_lateral_direction_ > 0.15)
+    else if(localization_accuracy[1] <= 0.15 && localization_accuracy[1] > 0.1)
     {
         QFrame_vector[1]->setStyleSheet("background-color: yellow;");
     }
-    else if(localization_accuracy_lateral_direction_ <= 0.15 && localization_accuracy_lateral_direction_ > 0)
+    else if(localization_accuracy[1] <= 0.1 && localization_accuracy[1] > 0)
     {
         QFrame_vector[1]->setStyleSheet("background-color: #00FF00;");
     }
@@ -214,12 +216,23 @@ void Qtmain::update_localization_status(
         QFrame_vector[1]->setStyleSheet("background-color: red;");
     }
 
-    QString localization_accuracy_text = QString("localization_accuracy: %1").arg(localization_accuracy_);
+    QString localization_accuracy_text = QString("localization_accuracy: %1").arg(localization_accuracy[0]);
     QLabel_vector[0]->setText(localization_accuracy_text);
 
     QString  localization_accuracy_lateral_direction_text = QString(
-        "localization_accuracy_LD: %1").arg(localization_accuracy_lateral_direction_);
+        "localization_accuracy_LD: %1").arg(localization_accuracy[1]);
     QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
+    
+    //From Autoware
+    /**:
+    ros__parameters:
+        scale: 3.0
+        error_ellipse_size: 1.5
+        warn_ellipse_size: 1.2
+        error_ellipse_size_lateral_direction: 0.3
+        warn_ellipse_size_lateral_direction: 0.25
+    **/
+
 }
 
 void Qtmain::create_frame(const int& x, const int& y, const int& width, const int& height)
