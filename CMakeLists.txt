@@ -9,7 +9,9 @@ find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(roscco_msgs REQUIRED)
-find_package(autoware_vehicle_msgs REQUIRED)
+find_package(autoware_auto_vehicle_msgs REQUIRED)
+find_package(autoware_adapi_v1_msgs REQUIRED)
+find_package(adma_ros_driver_msgs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 
@@ -30,7 +32,9 @@ ament_target_dependencies(
   rclcpp
   std_msgs
   roscco_msgs
-  autoware_vehicle_msgs
+  autoware_auto_vehicle_msgs
+  autoware_adapi_v1_msgs
+  adma_ros_driver_msgs
 )
 
 add_library(

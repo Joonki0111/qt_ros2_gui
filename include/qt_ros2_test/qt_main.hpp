@@ -38,7 +38,6 @@ private:
   };
 
   const std::shared_ptr<ROS2> ros2_node;
-  bool enable_control_btn_count;
   bool twist_controller_btn_count;
   bool roscco_status_prev[3];
   bool roscco_enable_btn_Callback_count;
@@ -48,7 +47,7 @@ private:
 
   //btn can use the same structure(Label_info)
   Label_info twist_controller_btn_;
-  Label_info enable_control_btn_;
+  Label_info auto_mode_btn_;
   Label_info enable_pub_btn_;
   Label_info disable_pub_btn_;
 
@@ -57,6 +56,7 @@ private:
   Frame_info steering_frame_;
   Frame_info brake_frame_;
   Frame_info throttle_frame_;
+  Frame_info adma_gnss_mode_frame_;
 
   Label_info autoware_label_;
   Label_info localization_accuracy_label_;
@@ -65,17 +65,17 @@ private:
   Label_info steering_label_;
   Label_info brake_label_;
   Label_info throttle_label_;
-  Label_info steering_status_label_;
-  Label_info brake_status_label_;
-  Label_info throttle_status_label_;
+  Label_info adma_label_;
+  Label_info adma_gnss_mode_label_;
 
   void timer_Callback();
   void twist_controller_btn_Callback();
-  void enable_control_btn_Callback();
+  void auto_mode_btn_Callback();
   void roscco_enable_btn_Callback();
   void roscco_disable_btn_Callback();
   void update_roscco_cmd_monitor(float* roscco_cmd);
   void update_localization_monitor(float* localization_accuracy);
+  void update_gnss_mode_monitor(const int gnss_mode);
   void adjust_roscco_status(const bool *roscco_status);
   bool check_roscco_status_change(const bool *roscco_status, const bool roscco_enable_btn_Callback_count);
   void create_frame(const int& x, const int& y, const int& width, const int& height);
