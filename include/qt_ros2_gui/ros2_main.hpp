@@ -17,16 +17,16 @@ class ROS2 : public rclcpp::Node
 public:
     struct ROSCCOStatus
     {
-        bool brake_enabled = false;
-        bool steer_enabled = false;
-        bool throttle_enabled = false;
+        bool is_brake_enabled = false;
+        bool is_steer_enabled = false;
+        bool is_throttle_enabled = false;
     };
 
     struct SensorStatus
     {
-        bool isOusterActive{false};
-        bool isROSCCOActive{false};
-        bool isADMAActive{false};
+        bool is_Ouster_active{false};
+        bool is_ROSCCO_active{false};
+        bool is_ADMA_active{false};
         rclcpp::Time current_time;
     };
 

@@ -44,11 +44,11 @@ void ROS2::OusterClockCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
     const double dt = (sensor_status_.current_time - Ouster_time).seconds();
     if(std::fabs(dt) > 0.1f)
     {
-        sensor_status_.isOusterActive = false;
+        sensor_status_.is_Ouster_active = false;
     }
     else
     {
-        sensor_status_.isOusterActive = true;
+        sensor_status_.is_Ouster_active = true;
     }
 }
 
@@ -59,11 +59,11 @@ void ROS2::ROSCCOCallback(const std_msgs::msg::Header::SharedPtr msg)
     const double dt = (sensor_status_.current_time - ROSCCO_time).seconds();
     if(std::fabs(dt) > 0.1f)
     {
-        sensor_status_.isROSCCOActive = false;
+        sensor_status_.is_ROSCCO_active = false;
     }
     else
     {
-        sensor_status_.isROSCCOActive = true;
+        sensor_status_.is_ROSCCO_active = true;
     }
 }
 
@@ -74,19 +74,19 @@ void ROS2::ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::Sha
     const double dt = (sensor_status_.current_time - AMDA_time).seconds();
     if(std::fabs(dt) > 0.1f)
     {
-        sensor_status_.isADMAActive = false;
+        sensor_status_.is_ADMA_active = false;
     }
     else
     {
-        sensor_status_.isADMAActive = true;
+        sensor_status_.is_ADMA_active = true;
     }
 }
 
 void ROS2::ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg)
 {
-    roscco_status_.brake_enabled = msg->brake_status;
-    roscco_status_.steer_enabled = msg->steering_status;
-    roscco_status_.throttle_enabled = msg->throttle_status;
+    roscco_status_.is_brake_enabled = msg->brake_status;
+    roscco_status_.is_steer_enabled = msg->steering_status;
+    roscco_status_.is_throttle_enabled = msg->throttle_status;
 }
 
 void ROS2::ReqAutowareOperationMode(const bool auto_mode)

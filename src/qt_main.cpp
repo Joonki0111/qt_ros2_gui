@@ -135,15 +135,19 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
     localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
     localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
-    roscco_label_ = {3, 110, 200, 30, "[ROSCCO]"};
+    ROSCCO_label_ = {3, 110, 70, 30, "[ROSCCO]"};
     brake_label_ = {3, 140, 130, 30, "Brake Disabled"};
     steer_label_ = {3, 170, 130, 30, "Steer Disabled"};
     throttle_label_ = {3, 200, 130, 30, "Throttle Disabled"};
     BPS_label_ = {153, 140, 100, 30, "BPS: 0"};
     STS_label_ = {153, 170, 100, 30, "STS: 0"};
     APS_label_ = {153, 200, 100, 30, "APS: 0"};
-    adma_label_ = {3, 249, 150, 30, "[ADMA]"};
-    adma_gnss_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
+    ADMA_label_ = {3, 249, 60, 30, "[ADMA]"};
+    ADMA_GNSS_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
+    Ouster_label_ = {3, 330, 60, 30, "[Ouster]"};
+    ROSCCO_status_label_ = {83, 110, 30, 30, "Off"};
+    ADMA_status_label_ = {73, 249, 60, 30, "Off"};
+    Ouster_status_label_ = {73, 330, 60, 30, "Off"};
 
     //QLabel_vector[0]               
     createLabel(localization_accuracy_label_.x, localization_accuracy_label_.y, 
@@ -153,8 +157,8 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
                     localization_accuracy_lateral_direction_label_.width, 
                     localization_accuracy_lateral_direction_label_.height, localization_accuracy_lateral_direction_label_.text);
     //QLabel_vector[2]
-    createLabel(roscco_label_.x, roscco_label_.y, 
-                    roscco_label_.width, roscco_label_.height, roscco_label_.text);
+    createLabel(ROSCCO_label_.x, ROSCCO_label_.y, 
+                    ROSCCO_label_.width, ROSCCO_label_.height, ROSCCO_label_.text);
     //QLabel_vector[3]
     createLabel(brake_label_.x, brake_label_.y, 
                     brake_label_.width, brake_label_.height, brake_label_.text);    
@@ -177,11 +181,23 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     createLabel(autoware_label_.x, autoware_label_.y, 
                     autoware_label_.width, autoware_label_.height, autoware_label_.text);
     //QLabel_vector[10]
-    createLabel(adma_label_.x, adma_label_.y, 
-                    adma_label_.width, adma_label_.height, adma_label_.text);
+    createLabel(ADMA_label_.x, ADMA_label_.y, 
+                    ADMA_label_.width, ADMA_label_.height, ADMA_label_.text);
     //QLabel_vector[11]
-    createLabel(adma_gnss_mode_label_.x, adma_gnss_mode_label_.y, 
-                    adma_gnss_mode_label_.width, adma_gnss_mode_label_.height, adma_gnss_mode_label_.text);  
+    createLabel(ADMA_GNSS_mode_label_.x, ADMA_GNSS_mode_label_.y, 
+                    ADMA_GNSS_mode_label_.width, ADMA_GNSS_mode_label_.height, ADMA_GNSS_mode_label_.text);  
+    //QLabel_vector[12]
+    createLabel(Ouster_label_.x, Ouster_label_.y, 
+                    Ouster_label_.width, Ouster_label_.height, Ouster_label_.text);  
+    //QLabel_vector[13]
+    createLabel(ROSCCO_status_label_.x, ROSCCO_status_label_.y, 
+                    ROSCCO_status_label_.width, ROSCCO_status_label_.height, ROSCCO_status_label_.text);  
+    //QLabel_vector[14]
+    createLabel(ADMA_status_label_.x, ADMA_status_label_.y, 
+                    ADMA_status_label_.width, ADMA_status_label_.height, ADMA_status_label_.text);  
+    //QLabel_vector[15]
+    createLabel(Ouster_status_label_.x, Ouster_status_label_.y, 
+                    Ouster_status_label_.width, Ouster_status_label_.height, Ouster_status_label_.text);  
 
 
 
@@ -216,14 +232,14 @@ void Qtmain::TimerCallback()
     float* localization_accuracy = ros2_node->updateLocalizationAccuracy();
     updateLocalizationMonitor(localization_accuracy);
     updateRosccoStatusMonitor();
-
+    updateSensorStatusMonitor();
 }
 
 void Qtmain::updateRosccoStatusMonitor()
 {
     ROS2::ROSCCOStatus roscco_status = ros2_node->updateROSCCOStatus();
 
-    if(roscco_status.brake_enabled)
+    if(roscco_status.is_brake_enabled)
     {
         QLabel_vector[3]->setText(QString("Brake Enabled"));
         QFrame_vector[2]->setStyleSheet("background-color: #00FF00;");
@@ -234,7 +250,7 @@ void Qtmain::updateRosccoStatusMonitor()
         QFrame_vector[2]->setStyleSheet("background-color: red;");
     }
 
-    if(roscco_status.steer_enabled)
+    if(roscco_status.is_steer_enabled)
     {
         QLabel_vector[4]->setText(QString("Steer Enabled"));
         QFrame_vector[3]->setStyleSheet("background-color: #00FF00;");
@@ -245,7 +261,7 @@ void Qtmain::updateRosccoStatusMonitor()
         QFrame_vector[3]->setStyleSheet("background-color: red;");
     }
         
-    if(roscco_status.throttle_enabled)
+    if(roscco_status.is_throttle_enabled)
     {
         QLabel_vector[5]->setText(QString("Throttle Enabled"));
         QFrame_vector[4]->setStyleSheet("background-color: #00FF00;");
@@ -331,6 +347,20 @@ void Qtmain::updateGNSSModeMonitor(const int gnss_mode)
 
     QString gnss_mode_text_qt = QString("gnss_mode: %1").arg(gnss_mode_text);
     QLabel_vector[8]->setText(gnss_mode_text_qt);
+}
+
+void Qtmain::updateSensorStatusMonitor()
+{
+    ROS2::SensorStatus sensor_status = ros2_node->updateSensorStatus();
+    
+    if(sensor_status.is_ROSCCO_active) QLabel_vector[13]->setText(QString("On"));
+    else QLabel_vector[13]->setText(QString("Off"));
+
+    if(sensor_status.is_ADMA_active) QLabel_vector[14]->setText(QString("On"));
+    else QLabel_vector[14]->setText(QString("Off"));
+
+    if(sensor_status.is_Ouster_active) QLabel_vector[15]->setText(QString("On"));
+    else QLabel_vector[15]->setText(QString("Off"));
 }
 
 void Qtmain::createFrame(const int& x, const int& y, const int& width, const int& height)

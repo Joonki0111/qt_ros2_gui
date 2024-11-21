@@ -58,15 +58,19 @@ class Qtmain : public QWidget
         Label_info autoware_label_;
         Label_info localization_accuracy_label_;
         Label_info localization_accuracy_lateral_direction_label_;
-        Label_info roscco_label_;
+        Label_info ROSCCO_label_;
         Label_info brake_label_;
         Label_info steer_label_;
         Label_info throttle_label_;
         Label_info STS_label_;
         Label_info BPS_label_;
         Label_info APS_label_;
-        Label_info adma_label_;
-        Label_info adma_gnss_mode_label_;
+        Label_info ADMA_label_;
+        Label_info ADMA_GNSS_mode_label_;
+        Label_info Ouster_label_;
+        Label_info ROSCCO_status_label_;
+        Label_info ADMA_status_label_;
+        Label_info Ouster_status_label_;
 
         void TimerCallback();
         void AWAutoBtnCallback();
@@ -76,6 +80,7 @@ class Qtmain : public QWidget
         void updateRosccoStatusMonitor();
         void updateLocalizationMonitor(float* localization_accuracy);
         void updateGNSSModeMonitor(const int gnss_mode);
+        void updateSensorStatusMonitor();
         void createFrame(const int& x, const int& y, const int& width, const int& height);
         void createLabel(const int& x, const int& y, const int& width,
             const int& height, const std::string& text);
