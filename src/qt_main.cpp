@@ -85,32 +85,44 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
 
     /** [Create frame]
      * 1. Create frame variable with basic setting {pos_x, pos_y, size_x, size_y}. see struct Frame_info
-     * 2. Call create_frame func to initialize frame.
+     * 2. Call createFrame func to initialize frame.
     */
     localization_accuracy_frame_ = {0, 31, 250, 30};
     localization_accuracy_lateral_direction_frame_ = {0, 61, 250, 30};
-    brake_frame_ = {0, 140, 120, 30};
-    steering_frame_ = {0, 170, 120, 30};
-    throttle_frame_ = {0, 200, 120, 30};
+    brake_frame_ = {0, 140, 140, 30};
+    steer_frame_ = {0, 170, 140, 30};
+    throttle_frame_ = {0, 200, 140, 30};
+    BPS_frame_ = {150, 140, 70, 30};
+    STS_frame_ = {150, 170, 70, 30};
+    APS_frame_ = {150, 200, 70, 30};
     adma_gnss_mode_frame_ = {0, 280, 150, 30};
 
     //QFrame_vector[0]
-    create_frame(localization_accuracy_frame_.x, localization_accuracy_frame_.y, 
+    createFrame(localization_accuracy_frame_.x, localization_accuracy_frame_.y, 
                     localization_accuracy_frame_.width, localization_accuracy_frame_.height);
     //QFrame_vector[1]
-    create_frame(localization_accuracy_lateral_direction_frame_.x, localization_accuracy_lateral_direction_frame_.y, 
+    createFrame(localization_accuracy_lateral_direction_frame_.x, localization_accuracy_lateral_direction_frame_.y, 
                     localization_accuracy_lateral_direction_frame_.width, localization_accuracy_lateral_direction_frame_.height);
-    //QFrame_vector[2]                
-    create_frame(brake_frame_.x, brake_frame_.y, 
-                    brake_frame_.width, brake_frame_.height);   
-    //QFrame_vector[3]                
-    create_frame(steering_frame_.x, steering_frame_.y, 
-                    steering_frame_.width, steering_frame_.height);
-    //QFrame_vector[4]                
-    create_frame(throttle_frame_.x, throttle_frame_.y, 
+    //QFrame_vector[2]
+    createFrame(brake_frame_.x, brake_frame_.y, 
+                    brake_frame_.width, brake_frame_.height);
+    //QFrame_vector[3]           
+    createFrame(steer_frame_.x, steer_frame_.y, 
+                    steer_frame_.width, steer_frame_.height);
+    //QFrame_vector[4]           
+    createFrame(throttle_frame_.x, throttle_frame_.y, 
                     throttle_frame_.width, throttle_frame_.height);
-    //QFrame_vector[5]                
-    create_frame(adma_gnss_mode_frame_.x, adma_gnss_mode_frame_.y, 
+    //QFrame_vector[5]
+    createFrame(BPS_frame_.x, BPS_frame_.y, 
+                    BPS_frame_.width, BPS_frame_.height);
+    //QFrame_vector[6]           
+    createFrame(STS_frame_.x, STS_frame_.y, 
+                    STS_frame_.width, STS_frame_.height);
+    //QFrame_vector[7]           
+    createFrame(APS_frame_.x, APS_frame_.y, 
+                    APS_frame_.width, APS_frame_.height);
+    //QFrame_vector[8]           
+    createFrame(adma_gnss_mode_frame_.x, adma_gnss_mode_frame_.y, 
                     adma_gnss_mode_frame_.width, adma_gnss_mode_frame_.height);
 
 
@@ -118,45 +130,57 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
 
     /** [Create label]
      * 1. Create label variable with basic setting {pos_x, pos_y, size_x, size_y, text}. see struct Label_info
-     * 2. Call create_label func to initialize label.
+     * 2. Call createLabel func to initialize label.
     */ 
     autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
     localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
     localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
     roscco_label_ = {3, 110, 200, 30, "[ROSCCO]"};
-    brake_label_ = {3, 140, 100, 30, "Brake: 0"};
-    steering_label_ = {3, 170, 100, 30, "Steering: 0"};
-    throttle_label_ = {3, 200, 100, 30, "Throttle: 0"};
+    brake_label_ = {3, 140, 130, 30, "Brake Disabled"};
+    steer_label_ = {3, 170, 130, 30, "Steer Disabled"};
+    throttle_label_ = {3, 200, 130, 30, "Throttle Disabled"};
+    BPS_label_ = {153, 140, 100, 30, "BPS: 0"};
+    STS_label_ = {153, 170, 100, 30, "STS: 0"};
+    APS_label_ = {153, 200, 100, 30, "APS: 0"};
     adma_label_ = {3, 249, 150, 30, "[ADMA]"};
     adma_gnss_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
 
     //QLabel_vector[0]               
-    create_label(localization_accuracy_label_.x, localization_accuracy_label_.y, 
+    createLabel(localization_accuracy_label_.x, localization_accuracy_label_.y, 
                     localization_accuracy_label_.width, localization_accuracy_label_.height, localization_accuracy_label_.text);
     //QLabel_vector[1]
-    create_label(localization_accuracy_lateral_direction_label_.x, localization_accuracy_lateral_direction_label_.y, 
+    createLabel(localization_accuracy_lateral_direction_label_.x, localization_accuracy_lateral_direction_label_.y, 
                     localization_accuracy_lateral_direction_label_.width, 
                     localization_accuracy_lateral_direction_label_.height, localization_accuracy_lateral_direction_label_.text);
     //QLabel_vector[2]
-    create_label(roscco_label_.x, roscco_label_.y, 
+    createLabel(roscco_label_.x, roscco_label_.y, 
                     roscco_label_.width, roscco_label_.height, roscco_label_.text);
     //QLabel_vector[3]
-    create_label(brake_label_.x, brake_label_.y, 
+    createLabel(brake_label_.x, brake_label_.y, 
                     brake_label_.width, brake_label_.height, brake_label_.text);    
     //QLabel_vector[4]
-    create_label(steering_label_.x, steering_label_.y, 
-                    steering_label_.width, steering_label_.height, steering_label_.text);    
+    createLabel(steer_label_.x, steer_label_.y, 
+                    steer_label_.width, steer_label_.height, steer_label_.text);    
     //QLabel_vector[5]
-    create_label(throttle_label_.x, throttle_label_.y, 
+    createLabel(throttle_label_.x, throttle_label_.y, 
                     throttle_label_.width, throttle_label_.height, throttle_label_.text);
     //QLabel_vector[6]
-    create_label(autoware_label_.x, autoware_label_.y, 
-                    autoware_label_.width, autoware_label_.height, autoware_label_.text);
+    createLabel(BPS_label_.x, BPS_label_.y, 
+                    BPS_label_.width, BPS_label_.height, BPS_label_.text);    
     //QLabel_vector[7]
-    create_label(adma_label_.x, adma_label_.y, 
-                    adma_label_.width, adma_label_.height, adma_label_.text);
+    createLabel(STS_label_.x, STS_label_.y, 
+                    STS_label_.width, STS_label_.height, STS_label_.text);    
     //QLabel_vector[8]
-    create_label(adma_gnss_mode_label_.x, adma_gnss_mode_label_.y, 
+    createLabel(APS_label_.x, APS_label_.y, 
+                    APS_label_.width, APS_label_.height, APS_label_.text);
+    //QLabel_vector[9]
+    createLabel(autoware_label_.x, autoware_label_.y, 
+                    autoware_label_.width, autoware_label_.height, autoware_label_.text);
+    //QLabel_vector[10]
+    createLabel(adma_label_.x, adma_label_.y, 
+                    adma_label_.width, adma_label_.height, adma_label_.text);
+    //QLabel_vector[11]
+    createLabel(adma_gnss_mode_label_.x, adma_gnss_mode_label_.y, 
                     adma_gnss_mode_label_.width, adma_gnss_mode_label_.height, adma_gnss_mode_label_.text);  
 
 
@@ -179,29 +203,61 @@ void Qtmain::AWStopBtnCallback()
 
 void Qtmain::ROSCCOEnableBtnCallback()
 {
-    ros2_node->pub_roscco_enable_disable(true);
+    ros2_node->pubROSCCOEnableDisable(true);
 }
 
 void Qtmain::ROSCCODisableBtnCallback()
 {
-    ros2_node->pub_roscco_enable_disable(false);
+    ros2_node->pubROSCCOEnableDisable(false);
 }
 
 void Qtmain::TimerCallback()
 {   
-    float* localization_accuracy = ros2_node->GetLocalizationAccuracy();
-    update_localization_monitor(localization_accuracy);
+    float* localization_accuracy = ros2_node->updateLocalizationAccuracy();
+    updateLocalizationMonitor(localization_accuracy);
+    updateRosccoStatusMonitor();
+
 }
 
-void Qtmain::update_roscco_cmd_monitor(float* roscco_cmd)
+void Qtmain::updateRosccoStatusMonitor()
 {
-    QLabel_vector[3]->setText(QString("Brake: %1").arg(roscco_cmd[0]));
-    QLabel_vector[4]->setText(QString("Steering: %1").arg(roscco_cmd[1]));
-    QLabel_vector[5]->setText(QString("Throttle %1").arg(roscco_cmd[2]));
+    ROS2::ROSCCOStatus roscco_status = ros2_node->updateROSCCOStatus();
+
+    if(roscco_status.brake_enabled)
+    {
+        QLabel_vector[3]->setText(QString("Brake Enabled"));
+        QFrame_vector[2]->setStyleSheet("background-color: #00FF00;");
+    }
+    else
+    {
+        QLabel_vector[3]->setText(QString("Brake Disabled"));
+        QFrame_vector[2]->setStyleSheet("background-color: red;");
+    }
+
+    if(roscco_status.steer_enabled)
+    {
+        QLabel_vector[4]->setText(QString("Steer Enabled"));
+        QFrame_vector[3]->setStyleSheet("background-color: #00FF00;");
+    }
+    else
+    {
+        QLabel_vector[4]->setText(QString("Steer Disabled"));
+        QFrame_vector[3]->setStyleSheet("background-color: red;");
+    }
+        
+    if(roscco_status.throttle_enabled)
+    {
+        QLabel_vector[5]->setText(QString("Throttle Enabled"));
+        QFrame_vector[4]->setStyleSheet("background-color: #00FF00;");
+    }
+    else
+    {
+        QLabel_vector[5]->setText(QString("Throttle Disabled"));
+        QFrame_vector[4]->setStyleSheet("background-color: red;");
+    }
 }
 
-void Qtmain::update_localization_monitor(
-    float* localization_accuracy)
+void Qtmain::updateLocalizationMonitor(float* localization_accuracy)
 {
     if(localization_accuracy[0] > 0.15)
     {
@@ -245,7 +301,7 @@ void Qtmain::update_localization_monitor(
     QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
 }
 
-void Qtmain::update_gnss_mode_monitor(const int gnss_mode)
+void Qtmain::updateGNSSModeMonitor(const int gnss_mode)
 {
     QString gnss_mode_text;
 
@@ -277,7 +333,7 @@ void Qtmain::update_gnss_mode_monitor(const int gnss_mode)
     QLabel_vector[8]->setText(gnss_mode_text_qt);
 }
 
-void Qtmain::create_frame(const int& x, const int& y, const int& width, const int& height)
+void Qtmain::createFrame(const int& x, const int& y, const int& width, const int& height)
 {
     QFrame *newFrame = new QFrame(this);
 
@@ -290,7 +346,7 @@ void Qtmain::create_frame(const int& x, const int& y, const int& width, const in
     QFrame_vector.push_back(newFrame);
 }
 
-void Qtmain::create_label(const int& x, const int& y, const int& width,
+void Qtmain::createLabel(const int& x, const int& y, const int& width,
     const int& height, const std::string& text)
 {
     QString qText = QString::fromStdString(text);

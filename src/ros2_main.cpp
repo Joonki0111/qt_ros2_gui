@@ -16,6 +16,8 @@ ROS2::ROS2() : Node("node")
         ("/time_from_roscco", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
     adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
         ("/genesys/adma/data_scaled", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
+    ROSCCO_status_sub_ = this->create_subscription<roscco_msgs::msg::RosccoStatus>
+        ("/roscco/status", rclcpp::QoS(1), std::bind(&ROS2::ROSCCOStatusCallback, this, std::placeholders::_1));
 
     AW_auto_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
     AW_stop_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_stop");
@@ -80,6 +82,13 @@ void ROS2::ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::Sha
     }
 }
 
+void ROS2::ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg)
+{
+    roscco_status_.brake_enabled = msg->brake_status;
+    roscco_status_.steer_enabled = msg->steering_status;
+    roscco_status_.throttle_enabled = msg->throttle_status;
+}
+
 void ROS2::ReqAutowareOperationMode(const bool auto_mode)
 {
     if(auto_mode)
@@ -98,7 +107,7 @@ void ROS2::ReqAutowareOperationMode(const bool auto_mode)
     }
 }
 
-float* ROS2::GetLocalizationAccuracy()
+float* ROS2::updateLocalizationAccuracy()
 {
     static float localization_status[2];
     localization_status[0] = localization_accuracy_;
@@ -106,14 +115,19 @@ float* ROS2::GetLocalizationAccuracy()
     return localization_status;
 }
 
-void ROS2::pub_roscco_enable_disable(const bool enable_roscco)
+void ROS2::pubROSCCOEnableDisable(const bool enable_roscco)
 {
     roscco_msgs::msg::EnableDisable msg;
     msg.enable_control = enable_roscco;
     ROSCCO_enable_disable_pub_->publish(msg);
 }
 
-ROS2::SensorStatus ROS2::UpdateSensorStatus()
+ROS2::SensorStatus ROS2::updateSensorStatus()
 {
     return sensor_status_;
+}
+
+ROS2::ROSCCOStatus ROS2::updateROSCCOStatus()
+{
+    return roscco_status_;
 }
