@@ -1,18 +1,10 @@
-#include "qt_ros2_test/qt_main.hpp"
+#include "qt_ros2_gui/qt_main.hpp"
 
 // RCLCPP_INFO(rclcpp::get_logger("test"),"%d", main_Btn_state);
 
 Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWidget(parent_), ros2_node(ros2_node_)
 {
-    label_count = 0;
-    frame_count = 0;
-    btn_count = 0;
-
-    twist_controller_btn_count = false;
-    roscco_enable_btn_Callback_count = false;
-
     //{pos_x, pos_y, size_x, size_y, text}
-    twist_controller_btn_ = {0, 700, 150, 100, "[TwistController] \n Disable Control"};
     auto_mode_btn_ = {150, 700, 150, 100, "[Autoware] \n Auto mode req"};
     enable_pub_btn_ = {300, 700, 150, 100, "[Roscco] \n Enable"};
     disable_pub_btn_ = {450, 700, 150, 100, "[Roscco] \n Disable"};
@@ -34,55 +26,44 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     adma_label_ = {3, 249, 150, 30, "[ADMA]"};
     adma_gnss_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
 
-    this->resize(600, 800);
+    resize(600, 800);
 
     QRect screenGeometry = QApplication::desktop()->screenGeometry();
-    program_x_ = screenGeometry.width() - this->width();
+    program_x_ = screenGeometry.width() - width();
     program_y_ = 0;
-    this->move(program_x_, program_y_);
+    move(program_x_, program_y_);
 
     timer_ = new QTimer(this);
     timer_->setInterval(20); // TODO_2 : interval speed
-    connect(timer_, &QTimer::timeout, this, &Qtmain::timer_Callback);
+    connect(timer_, &QTimer::timeout, this, &Qtmain::TimerCallback);
 
     //QPushButton_vector[0]
-    create_btn(twist_controller_btn_.x, twist_controller_btn_.y, 
-                    twist_controller_btn_.width, twist_controller_btn_.height, twist_controller_btn_.text);
-    //QPushButton_vector[1]
     create_btn(auto_mode_btn_.x, auto_mode_btn_.y, 
                     auto_mode_btn_.width, auto_mode_btn_.height, auto_mode_btn_.text);
-    //QPushButton_vector[2]
+    //QPushButton_vector[1]
     create_btn(enable_pub_btn_.x, enable_pub_btn_.y, 
                     enable_pub_btn_.width, enable_pub_btn_.height, enable_pub_btn_.text);
-    //QPushButton_vector[3]
+    //QPushButton_vector[2]
     create_btn(disable_pub_btn_.x, disable_pub_btn_.y, 
                     disable_pub_btn_.width, disable_pub_btn_.height, disable_pub_btn_.text);
 
-    connect(QPushButton_vector[0], &QPushButton::clicked, this, &Qtmain::twist_controller_btn_Callback);
-    connect(QPushButton_vector[1], &QPushButton::clicked, this, &Qtmain::auto_mode_btn_Callback);
-    connect(QPushButton_vector[2], &QPushButton::clicked, this, &Qtmain::roscco_enable_btn_Callback);
-    connect(QPushButton_vector[3], &QPushButton::clicked, this, &Qtmain::roscco_disable_btn_Callback);
+    connect(QPushButton_vector[0], &QPushButton::clicked, this, &Qtmain::auto_mode_btn_Callback);
+    connect(QPushButton_vector[1], &QPushButton::clicked, this, &Qtmain::roscco_enable_btn_Callback);
+    connect(QPushButton_vector[2], &QPushButton::clicked, this, &Qtmain::roscco_disable_btn_Callback);
 
     QPushButton_vector[0]->setStyleSheet(
-        "background-color: red;" 
-        "color: black;"
-        "font-family: 'Arial';"
-        "font-size: 15px;"
-        "font-weight: bold;");
-
-    QPushButton_vector[1]->setStyleSheet(
         "background-color: #efefef;" 
         "color: black;"    
         "font-family: 'Arial';"
         "font-size: 15px;"
         "font-weight: bold;");
-    QPushButton_vector[2]->setStyleSheet(
+    QPushButton_vector[1]->setStyleSheet(
         "background-color: #efefef;" 
         "color: #24b156;"    
         "font-family: 'Arial';"
         "font-size: 15px;"
         "font-weight: bold;");   
-    QPushButton_vector[3]->setStyleSheet(
+    QPushButton_vector[2]->setStyleSheet(
         "background-color: #efefef;" 
         "color: red;"    
         "font-family: 'Arial';"
@@ -137,50 +118,29 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     create_label(adma_gnss_mode_label_.x, adma_gnss_mode_label_.y, 
                     adma_gnss_mode_label_.width, adma_gnss_mode_label_.height, adma_gnss_mode_label_.text);  
            
-    roscco_disable_btn_Callback();
+    // roscco_disable_btn_Callback();
     timer_->start();
 }
 
-void Qtmain::twist_controller_btn_Callback()
-{
-    if(!twist_controller_btn_count)
-    {
-        QPushButton_vector[0]->setStyleSheet("background-color: #00FF00; color: black;");
-        QPushButton_vector[0]->setText("[TwistController] \n Enable Control");
-        ros2_node->update_twist_controller_trigger(1);
-        twist_controller_btn_count = true;
-    }
-    else
-    {
-        QPushButton_vector[0]->setStyleSheet("background-color: red; color: black;");
-        QPushButton_vector[0]->setText("[TwistController] \n Disable Control");
-        ros2_node->update_twist_controller_trigger(0);
-        twist_controller_btn_count = false;
-    }
-}
 void Qtmain::auto_mode_btn_Callback()
 {
-    ros2_node->send_autoware_mode_req();
+    ros2_node->SendAutowareModeReq();
 }
+
 void Qtmain::roscco_enable_btn_Callback()
 {
-    ros2_node->pub_roscco_enable();
-    roscco_enable_btn_Callback_count = true;
+    ros2_node->pub_roscco_enable_disable(true);
 }
 
 void Qtmain::roscco_disable_btn_Callback()
 {
-    ros2_node->pub_roscco_disable();
+    ros2_node->pub_roscco_enable_disable(false);
 }
 
-void Qtmain::timer_Callback()
+void Qtmain::TimerCallback()
 {   
-    float* roscco_cmd = ros2_node->get_roscco_cmd();
-    update_roscco_cmd_monitor(roscco_cmd);
-    float* localization_accuracy = ros2_node->get_localization_accuracy();
+    float* localization_accuracy = ros2_node->GetLocalizationAccuracy();
     update_localization_monitor(localization_accuracy);
-    const int gnss_mode = ros2_node->get_gnss_mode();
-    update_gnss_mode_monitor(gnss_mode);
 }
 
 void Qtmain::update_roscco_cmd_monitor(float* roscco_cmd)
@@ -233,17 +193,6 @@ void Qtmain::update_localization_monitor(
     QString localization_accuracy_lateral_direction_text = QString(
         "localization_accuracy_LD: %1").arg(localization_accuracy[1]);
     QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
-    
-    //From Autoware
-    /**:
-    ros__parameters:
-        scale: 3.0
-        error_ellipse_size: 1.5
-        warn_ellipse_size: 1.2
-        error_ellipse_size_lateral_direction: 0.3
-        warn_ellipse_size_lateral_direction: 0.25
-    **/
-
 }
 
 void Qtmain::update_gnss_mode_monitor(const int gnss_mode)
@@ -289,8 +238,6 @@ void Qtmain::create_frame(const int& x, const int& y, const int& width, const in
     
     newFrame->show();
     QFrame_vector.push_back(newFrame);
-
-    frame_count ++;
 }
 
 void Qtmain::create_label(const int& x, const int& y, const int& width,
@@ -304,8 +251,6 @@ void Qtmain::create_label(const int& x, const int& y, const int& width,
     
     newLabel->show();
     QLabel_vector.push_back(newLabel);
-
-    label_count ++;
 }
 
 void Qtmain::create_btn(const int& x, const int& y, const int& width,
@@ -318,6 +263,4 @@ void Qtmain::create_btn(const int& x, const int& y, const int& width,
     Btn->setGeometry(x, y, width, height);
     Btn->show();
     QPushButton_vector.push_back(Btn);
-
-    btn_count ++;
 }

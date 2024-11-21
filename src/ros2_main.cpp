@@ -1,87 +1,88 @@
-#include "qt_ros2_test/ros2_main.hpp"
+#include "qt_ros2_gui/ros2_main.hpp"
 
 ROS2::ROS2() : Node("node")
 {
-    pub_trigger_ = this->create_publisher<std_msgs::msg::Bool>("/trigger", rclcpp::QoS(1));
-    pub_enable_disable_ = this->create_publisher<roscco_msgs::msg::EnableDisable>("/enable_disable", rclcpp::QoS(1));
-    pub_autoware_control_ = this->create_publisher<autoware_auto_vehicle_msgs::msg::ControlModeReport>(
+    autoware_control_pub_ = this->create_publisher<autoware_auto_vehicle_msgs::msg::ControlModeReport>(
         "/vehicle/status/control_mode", rclcpp::QoS(1));
+    ROSCCO_enable_disable_pub_ = this->create_publisher<roscco_msgs::msg::EnableDisable>(
+        "/enable_disable", rclcpp::QoS(1));
 
-    sub_localization_accuracy_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
+    localization_accuracy_sub_ = this->create_subscription<std_msgs::msg::Float32MultiArray>(
         "/localization_accuracy", rclcpp::QoS(1), std::bind(
-            &ROS2::localization_accuracy_Callback, this, std::placeholders::_1));
-    sub_brake_cmd_ = this->create_subscription<roscco_msgs::msg::BrakeCommand>(
-        "/brake_command", rclcpp::QoS(1), std::bind(
-            &ROS2::brake_cmd_Callback, this, std::placeholders::_1));
-    sub_steering_cmd_ = this->create_subscription<roscco_msgs::msg::SteeringCommand>(
-        "/steering_command", rclcpp::QoS(1), std::bind(
-            &ROS2::steering_cmd_Callback, this, std::placeholders::_1));
-    sub_throttle_cmd_ = this->create_subscription<roscco_msgs::msg::ThrottleCommand>(
-        "/throttle_command", rclcpp::QoS(1), std::bind(
-            &ROS2::throttle_cmd_Callback, this, std::placeholders::_1));      
-    sub_gnss_mode_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>(
-        "/genesys/adma/data_scaled", rclcpp::QoS(1), std::bind(
-            &ROS2::gnss_mode_Callback, this, std::placeholders::_1));
+            &ROS2::LocalizationAccuracyCallback, this, std::placeholders::_1));   
+    ouster_clock_sub_ = this->create_subscription<rosgraph_msgs::msg::Clock>
+        ("/clock", 10, std::bind(&ROS2::OusterClockCallback, this, std::placeholders::_1));
+    roscco_clock_sub_ = this->create_subscription<std_msgs::msg::Header>
+        ("/time_from_roscco", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
+    adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
+        ("/genesys/adma/data_scaled", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
 
     auto_mode_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
 
-    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ROS2::timer_callback, this));
+    timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ROS2::TimerCallback, this));
 
-    brake_position = 0;
-    steering_torque = 0;
-    throttle_position = 0;
     localization_accuracy_ = 0;
     localization_accuracy_lateral_direction_ = 0;
     autoware_control_msg.mode = 1;
-    twist_controller_msg.data = 0;
-    gnss_mode = 0;
 }
 
-void ROS2::timer_callback()
+void ROS2::TimerCallback()
 {
-    pub_autoware_control_->publish(autoware_control_msg);
-    pub_trigger_->publish(twist_controller_msg);
+    autoware_control_pub_->publish(autoware_control_msg);
 }
 
-void ROS2::localization_accuracy_Callback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
+void ROS2::LocalizationAccuracyCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg)
 {
     localization_accuracy_ = std::round(msg->data[0] * 1000.0) / 1000.0;
     localization_accuracy_lateral_direction_ = std::round(msg->data[1] * 1000.0) / 1000.0;
 }
 
-void ROS2::pub_roscco_enable()
+void ROS2::OusterClockCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
 {
-    enable_disable_msg.enable_control = 1;
-    pub_enable_disable_->publish(enable_disable_msg);
+    sensor_status_.current_time = this->now();
+    rclcpp::Time Ouster_time = msg->clock;
+    const double dt = (sensor_status_.current_time - Ouster_time).seconds();
+    if(std::fabs(dt) > 0.1f)
+    {
+        sensor_status_.isOusterActive = false;
+    }
+    else
+    {
+        sensor_status_.isOusterActive = true;
+    }
 }
 
-void ROS2::pub_roscco_disable()
+void ROS2::ROSCCOCallback(const std_msgs::msg::Header::SharedPtr msg)
 {
-    enable_disable_msg.enable_control = 0;
-    pub_enable_disable_->publish(enable_disable_msg);
+    sensor_status_.current_time = this->now();
+    rclcpp::Time ROSCCO_time = msg->stamp;
+    const double dt = (sensor_status_.current_time - ROSCCO_time).seconds();
+    if(std::fabs(dt) > 0.1f)
+    {
+        sensor_status_.isROSCCOActive = false;
+    }
+    else
+    {
+        sensor_status_.isROSCCOActive = true;
+    }
 }
 
-void ROS2::brake_cmd_Callback(const roscco_msgs::msg::BrakeCommand::SharedPtr msg)
+void ROS2::ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::SharedPtr msg)
 {
-    brake_position = std::round(msg->brake_position * 100.0) / 100.0;
+    sensor_status_.current_time = this->now();
+    rclcpp::Time AMDA_time = msg->header.stamp;
+    const double dt = (sensor_status_.current_time - AMDA_time).seconds();
+    if(std::fabs(dt) > 0.1f)
+    {
+        sensor_status_.isADMAActive = false;
+    }
+    else
+    {
+        sensor_status_.isADMAActive = true;
+    }
 }
 
-void ROS2::steering_cmd_Callback(const roscco_msgs::msg::SteeringCommand::SharedPtr msg)
-{
-    steering_torque = std::round(msg->steering_torque * 100.0) / 100.0;
-}
-
-void ROS2::throttle_cmd_Callback(const roscco_msgs::msg::ThrottleCommand::SharedPtr msg)
-{
-    throttle_position = std::round(msg->throttle_position * 100.0) / 100.0;
-}
-
-void ROS2::gnss_mode_Callback(const adma_ros_driver_msgs::msg::AdmaDataScaled::SharedPtr msg)
-{
-    gnss_mode = msg->status.status_gnss_mode;
-}
-
-void ROS2::send_autoware_mode_req()
+void ROS2::SendAutowareModeReq()
 {
     std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
         std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
@@ -89,21 +90,7 @@ void ROS2::send_autoware_mode_req()
         auto_mode_client->async_send_request(request);
 }
 
-void ROS2::update_twist_controller_trigger(const bool &data)
-{
-    twist_controller_msg.data = data;
-}
-
-float* ROS2::get_roscco_cmd()
-{
-    static float roscco_cmd[3];
-    roscco_cmd[0] = brake_position;
-    roscco_cmd[1] = steering_torque;
-    roscco_cmd[2] = throttle_position;
-    return roscco_cmd;
-}
-
-float* ROS2::get_localization_accuracy()
+float* ROS2::GetLocalizationAccuracy()
 {
     static float localization_status[2];
     localization_status[0] = localization_accuracy_;
@@ -111,7 +98,14 @@ float* ROS2::get_localization_accuracy()
     return localization_status;
 }
 
-int ROS2::get_gnss_mode()
+void ROS2::pub_roscco_enable_disable(const bool enable_roscco)
 {
-    return gnss_mode;
+    roscco_msgs::msg::EnableDisable msg;
+    msg.enable_control = enable_roscco;
+    ROSCCO_enable_disable_pub_->publish(msg);
+}
+
+ROS2::SensorStatus ROS2::UpdateSensorStatus()
+{
+    return sensor_status_;
 }

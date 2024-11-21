@@ -1,11 +1,7 @@
 #include <QApplication>
-#include "qt_ros2_test/qt_main.hpp"
-#include "qt_ros2_test/ros2_main.hpp"
+#include "qt_ros2_gui/qt_main.hpp"
+#include "qt_ros2_gui/ros2_main.hpp"
 
-static void siginthandler(int /*param*/)
-{
-    QApplication::quit();
-}
 int main(int argc, char* argv[])
 {
     QApplication app(argc, argv);
@@ -23,12 +19,9 @@ int main(int argc, char* argv[])
 
     while (rclcpp::ok())
     {
-        exec.spin_some();
+        exec.spin_once();
         app.processEvents();
     }
 
-    signal(SIGINT, siginthandler);
-
-    exec.remove_node(ROS2_obj);
     rclcpp::shutdown();
 }
