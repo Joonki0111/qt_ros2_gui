@@ -15,7 +15,7 @@ class ROS2 : public rclcpp::Node
 {
 public:
     explicit ROS2();
-    void SendAutowareModeReq();
+    void ReqAutowareOperationMode(const bool auto_mode);
     float* GetLocalizationAccuracy();
     void pub_roscco_enable_disable(const bool enable_roscco);
 
@@ -37,15 +37,13 @@ private:
     rclcpp::Subscription<std_msgs::msg::Header>::SharedPtr roscco_clock_sub_;
     rclcpp::Subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>::SharedPtr adma_data_sub_;
 
-    rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr auto_mode_client;
+    rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr AW_auto_client;
+    rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr AW_stop_client;
 
     rclcpp::TimerBase::SharedPtr timer_;
 
-    autoware_auto_vehicle_msgs::msg::ControlModeReport autoware_control_msg;
-
-    float localization_accuracy_;
-    float localization_accuracy_lateral_direction_;
-
+    float localization_accuracy_ = 0.0;
+    float localization_accuracy_lateral_direction_ = 0.0;
     SensorStatus sensor_status_{};
 
     void LocalizationAccuracyCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);

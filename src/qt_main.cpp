@@ -4,52 +4,56 @@
 
 Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWidget(parent_), ros2_node(ros2_node_)
 {
-    //{pos_x, pos_y, size_x, size_y, text}
-    auto_mode_btn_ = {150, 700, 150, 100, "[Autoware] \n Auto mode req"};
-    enable_pub_btn_ = {300, 700, 150, 100, "[Roscco] \n Enable"};
-    disable_pub_btn_ = {450, 700, 150, 100, "[Roscco] \n Disable"};
-
-    localization_accuracy_frame_ = {0, 31, 250, 30};
-    localization_accuracy_lateral_direction_frame_ = {0, 61, 250, 30};
-    brake_frame_ = {0, 140, 120, 30};
-    steering_frame_ = {0, 170, 120, 30};
-    throttle_frame_ = {0, 200, 120, 30};
-    adma_gnss_mode_frame_ = {0, 280, 150, 30};
-
-    autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
-    localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
-    localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
-    roscco_label_ = {3, 110, 200, 30, "[ROSCCO]"};
-    brake_label_ = {3, 140, 100, 30, "Brake: 0"};
-    steering_label_ = {3, 170, 100, 30, "Steering: 0"};
-    throttle_label_ = {3, 200, 100, 30, "Throttle: 0"};
-    adma_label_ = {3, 249, 150, 30, "[ADMA]"};
-    adma_gnss_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
-
+    /** [Adjust size & position of the window]
+     *  Currently upper right corner is the default place.
+    */
     resize(600, 800);
-
     QRect screenGeometry = QApplication::desktop()->screenGeometry();
     program_x_ = screenGeometry.width() - width();
     program_y_ = 0;
     move(program_x_, program_y_);
 
+
+
+
+    /** [Create timer]
+     * This timer acts the same as ros2 timer.
+     * TODO: set appropriate interval speed.
+    */
     timer_ = new QTimer(this);
-    timer_->setInterval(20); // TODO_2 : interval speed
+    timer_->setInterval(20); 
     connect(timer_, &QTimer::timeout, this, &Qtmain::TimerCallback);
 
-    //QPushButton_vector[0]
-    create_btn(auto_mode_btn_.x, auto_mode_btn_.y, 
-                    auto_mode_btn_.width, auto_mode_btn_.height, auto_mode_btn_.text);
-    //QPushButton_vector[1]
-    create_btn(enable_pub_btn_.x, enable_pub_btn_.y, 
-                    enable_pub_btn_.width, enable_pub_btn_.height, enable_pub_btn_.text);
-    //QPushButton_vector[2]
-    create_btn(disable_pub_btn_.x, disable_pub_btn_.y, 
-                    disable_pub_btn_.width, disable_pub_btn_.height, disable_pub_btn_.text);
 
-    connect(QPushButton_vector[0], &QPushButton::clicked, this, &Qtmain::auto_mode_btn_Callback);
-    connect(QPushButton_vector[1], &QPushButton::clicked, this, &Qtmain::roscco_enable_btn_Callback);
-    connect(QPushButton_vector[2], &QPushButton::clicked, this, &Qtmain::roscco_disable_btn_Callback);
+
+
+    /** [Create button]
+     * 1. Create button variable with basic setting {pos_x, pos_y, size_x, size_y, text}. see struct Label_info
+     * 2. Call create_btn func to initialize button.
+     * 3. Call connect func to connect the Callback func.
+    */
+    AW_auto_btn_ = {0, 700, 150, 100, "[Autoware] \n Auto"};
+    AW_stop_btn_ = {150, 700, 150, 100, "[Autoware] \n Stop"};
+    ROSCCO_enable_btn_ = {300, 700, 150, 100, "[Roscco] \n Enable"};
+    ROSCCO_disable_btn = {450, 700, 150, 100, "[Roscco] \n Disable"};
+
+    //QPushButton_vector[0]
+    create_btn(AW_auto_btn_.x, AW_auto_btn_.y, 
+                    AW_auto_btn_.width, AW_auto_btn_.height, AW_auto_btn_.text);
+    //QPushButton_vector[1]
+    create_btn(AW_stop_btn_.x, AW_stop_btn_.y, 
+                    AW_stop_btn_.width, AW_stop_btn_.height, AW_stop_btn_.text);
+    //QPushButton_vector[2]
+    create_btn(ROSCCO_enable_btn_.x, ROSCCO_enable_btn_.y, 
+                    ROSCCO_enable_btn_.width, ROSCCO_enable_btn_.height, ROSCCO_enable_btn_.text);
+    //QPushButton_vector[3]
+    create_btn(ROSCCO_disable_btn.x, ROSCCO_disable_btn.y, 
+                    ROSCCO_disable_btn.width, ROSCCO_disable_btn.height, ROSCCO_disable_btn.text);
+
+    connect(QPushButton_vector[0], &QPushButton::clicked, this, &Qtmain::AWAutoBtnCallback);
+    connect(QPushButton_vector[1], &QPushButton::clicked, this, &Qtmain::AWStopBtnCallback);
+    connect(QPushButton_vector[2], &QPushButton::clicked, this, &Qtmain::ROSCCOEnableBtnCallback);
+    connect(QPushButton_vector[3], &QPushButton::clicked, this, &Qtmain::ROSCCODisableBtnCallback);
 
     QPushButton_vector[0]->setStyleSheet(
         "background-color: #efefef;" 
@@ -59,17 +63,37 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
         "font-weight: bold;");
     QPushButton_vector[1]->setStyleSheet(
         "background-color: #efefef;" 
+        "color: black;"    
+        "font-family: 'Arial';"
+        "font-size: 15px;"
+        "font-weight: bold;");
+    QPushButton_vector[2]->setStyleSheet(
+        "background-color: #efefef;" 
         "color: #24b156;"    
         "font-family: 'Arial';"
         "font-size: 15px;"
         "font-weight: bold;");   
-    QPushButton_vector[2]->setStyleSheet(
+    QPushButton_vector[3]->setStyleSheet(
         "background-color: #efefef;" 
         "color: red;"    
         "font-family: 'Arial';"
         "font-size: 15px;"
-        "font-weight: bold;");     
-        
+        "font-weight: bold;");
+
+
+
+
+    /** [Create frame]
+     * 1. Create frame variable with basic setting {pos_x, pos_y, size_x, size_y}. see struct Frame_info
+     * 2. Call create_frame func to initialize frame.
+    */
+    localization_accuracy_frame_ = {0, 31, 250, 30};
+    localization_accuracy_lateral_direction_frame_ = {0, 61, 250, 30};
+    brake_frame_ = {0, 140, 120, 30};
+    steering_frame_ = {0, 170, 120, 30};
+    throttle_frame_ = {0, 200, 120, 30};
+    adma_gnss_mode_frame_ = {0, 280, 150, 30};
+
     //QFrame_vector[0]
     create_frame(localization_accuracy_frame_.x, localization_accuracy_frame_.y, 
                     localization_accuracy_frame_.width, localization_accuracy_frame_.height);
@@ -88,6 +112,23 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     //QFrame_vector[5]                
     create_frame(adma_gnss_mode_frame_.x, adma_gnss_mode_frame_.y, 
                     adma_gnss_mode_frame_.width, adma_gnss_mode_frame_.height);
+
+
+
+
+    /** [Create label]
+     * 1. Create label variable with basic setting {pos_x, pos_y, size_x, size_y, text}. see struct Label_info
+     * 2. Call create_label func to initialize label.
+    */ 
+    autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
+    localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
+    localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
+    roscco_label_ = {3, 110, 200, 30, "[ROSCCO]"};
+    brake_label_ = {3, 140, 100, 30, "Brake: 0"};
+    steering_label_ = {3, 170, 100, 30, "Steering: 0"};
+    throttle_label_ = {3, 200, 100, 30, "Throttle: 0"};
+    adma_label_ = {3, 249, 150, 30, "[ADMA]"};
+    adma_gnss_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
 
     //QLabel_vector[0]               
     create_label(localization_accuracy_label_.x, localization_accuracy_label_.y, 
@@ -117,22 +158,31 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     //QLabel_vector[8]
     create_label(adma_gnss_mode_label_.x, adma_gnss_mode_label_.y, 
                     adma_gnss_mode_label_.width, adma_gnss_mode_label_.height, adma_gnss_mode_label_.text);  
-           
-    // roscco_disable_btn_Callback();
+
+
+
+
+    /** [Start timer]
+    */ 
     timer_->start();
 }
 
-void Qtmain::auto_mode_btn_Callback()
+void Qtmain::AWAutoBtnCallback()
 {
-    ros2_node->SendAutowareModeReq();
+    ros2_node->ReqAutowareOperationMode(true);
 }
 
-void Qtmain::roscco_enable_btn_Callback()
+void Qtmain::AWStopBtnCallback()
+{
+    ros2_node->ReqAutowareOperationMode(false);
+}
+
+void Qtmain::ROSCCOEnableBtnCallback()
 {
     ros2_node->pub_roscco_enable_disable(true);
 }
 
-void Qtmain::roscco_disable_btn_Callback()
+void Qtmain::ROSCCODisableBtnCallback()
 {
     ros2_node->pub_roscco_enable_disable(false);
 }

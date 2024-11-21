@@ -17,17 +17,15 @@ ROS2::ROS2() : Node("node")
     adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
         ("/genesys/adma/data_scaled", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
 
-    auto_mode_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
-
+    AW_auto_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
+    AW_stop_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_stop");
     timer_ = this->create_wall_timer(std::chrono::milliseconds(100), std::bind(&ROS2::TimerCallback, this));
-
-    localization_accuracy_ = 0;
-    localization_accuracy_lateral_direction_ = 0;
-    autoware_control_msg.mode = 1;
 }
 
 void ROS2::TimerCallback()
 {
+    autoware_auto_vehicle_msgs::msg::ControlModeReport autoware_control_msg;
+    autoware_control_msg.mode = 1;
     autoware_control_pub_->publish(autoware_control_msg);
 }
 
@@ -82,12 +80,22 @@ void ROS2::ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::Sha
     }
 }
 
-void ROS2::SendAutowareModeReq()
+void ROS2::ReqAutowareOperationMode(const bool auto_mode)
 {
-    std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
-        std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
-    std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
-        auto_mode_client->async_send_request(request);
+    if(auto_mode)
+    {
+        std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
+            std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
+        std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
+            AW_auto_client->async_send_request(request);
+    }
+    else
+    {
+        std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
+            std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
+        std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
+            AW_stop_client->async_send_request(request);
+    }
 }
 
 float* ROS2::GetLocalizationAccuracy()

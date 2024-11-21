@@ -40,9 +40,10 @@ private:
   QTimer *timer_;
 
   //btn can use the same structure(Label_info)
-  Label_info auto_mode_btn_;
-  Label_info enable_pub_btn_;
-  Label_info disable_pub_btn_;
+  Label_info AW_auto_btn_;
+  Label_info AW_stop_btn_;
+  Label_info ROSCCO_enable_btn_;
+  Label_info ROSCCO_disable_btn;
 
   Frame_info localization_accuracy_frame_;
   Frame_info localization_accuracy_lateral_direction_frame_;
@@ -62,9 +63,10 @@ private:
   Label_info adma_gnss_mode_label_;
 
   void TimerCallback();
-  void auto_mode_btn_Callback();
-  void roscco_enable_btn_Callback();
-  void roscco_disable_btn_Callback();
+  void AWAutoBtnCallback();
+  void AWStopBtnCallback();
+  void ROSCCOEnableBtnCallback();
+  void ROSCCODisableBtnCallback();
   void update_roscco_cmd_monitor(float* roscco_cmd);
   void update_localization_monitor(float* localization_accuracy);
   void update_gnss_mode_monitor(const int gnss_mode);
