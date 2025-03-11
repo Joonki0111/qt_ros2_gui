@@ -9,7 +9,7 @@ ROS2::ROS2() : Node("node")
         "/localization_accuracy", rclcpp::QoS(1), std::bind(
             &ROS2::LocalizationAccuracyCallback, this, std::placeholders::_1));   
     ouster_clock_sub_ = this->create_subscription<rosgraph_msgs::msg::Clock>
-        ("/clock", 10, std::bind(&ROS2::OusterClockCallback, this, std::placeholders::_1));
+        ("/ouster/clock", 10, std::bind(&ROS2::OusterClockCallback, this, std::placeholders::_1));
     roscco_clock_sub_ = this->create_subscription<std_msgs::msg::Header>
         ("/time_from_roscco", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
     adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
