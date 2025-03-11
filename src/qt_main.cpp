@@ -11,9 +11,6 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     program_y_ = 0;
     move(program_x_, program_y_);
 
-
-
-
     /** [Create timer]
      * This timer acts the same as ros2 timer.
      * TODO: set appropriate interval speed.
@@ -21,9 +18,6 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     timer_ = new QTimer(this);
     timer_->setInterval(100); 
     connect(timer_, &QTimer::timeout, this, &Qtmain::TimerCallback);
-
-
-
 
     /** [Create button]
      * 1. Create button variable with basic setting {pos_x, pos_y, size_x, size_y, text}. see struct Label_info
@@ -35,18 +29,10 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     ROSCCO_enable_btn_ = {300, 700, 150, 100, "[Roscco] \n Enable"};
     ROSCCO_disable_btn = {450, 700, 150, 100, "[Roscco] \n Disable"};
 
-    //QPushButton_vector[0]
-    create_btn(AW_auto_btn_.x, AW_auto_btn_.y, 
-                    AW_auto_btn_.width, AW_auto_btn_.height, AW_auto_btn_.text);
-    //QPushButton_vector[1]
-    create_btn(AW_stop_btn_.x, AW_stop_btn_.y, 
-                    AW_stop_btn_.width, AW_stop_btn_.height, AW_stop_btn_.text);
-    //QPushButton_vector[2]
-    create_btn(ROSCCO_enable_btn_.x, ROSCCO_enable_btn_.y, 
-                    ROSCCO_enable_btn_.width, ROSCCO_enable_btn_.height, ROSCCO_enable_btn_.text);
-    //QPushButton_vector[3]
-    create_btn(ROSCCO_disable_btn.x, ROSCCO_disable_btn.y, 
-                    ROSCCO_disable_btn.width, ROSCCO_disable_btn.height, ROSCCO_disable_btn.text);
+    create_btn(AW_auto_btn_); //QPushButton_vector[0]
+    create_btn(AW_stop_btn_); //QPushButton_vector[1]
+    create_btn(ROSCCO_enable_btn_); //QPushButton_vector[2]
+    create_btn(ROSCCO_disable_btn); //QPushButton_vector[3]
 
     connect(QPushButton_vector[0], &QPushButton::clicked, this, &Qtmain::AWAutoBtnCallback);
     connect(QPushButton_vector[1], &QPushButton::clicked, this, &Qtmain::AWStopBtnCallback);
@@ -78,9 +64,6 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
         "font-size: 15px;"
         "font-weight: bold;");
 
-
-
-
     /** [Create frame]
      * 1. Create frame variable with basic setting {pos_x, pos_y, size_x, size_y}. see struct Frame_info
      * 2. Call createFrame func to initialize frame.
@@ -95,36 +78,15 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     APS_frame_ = {150, 200, 70, 30};
     adma_gnss_mode_frame_ = {0, 280, 150, 30};
 
-    //QFrame_vector[0]
-    createFrame(localization_accuracy_frame_.x, localization_accuracy_frame_.y, 
-                    localization_accuracy_frame_.width, localization_accuracy_frame_.height);
-    //QFrame_vector[1]
-    createFrame(localization_accuracy_lateral_direction_frame_.x, localization_accuracy_lateral_direction_frame_.y, 
-                    localization_accuracy_lateral_direction_frame_.width, localization_accuracy_lateral_direction_frame_.height);
-    //QFrame_vector[2]
-    createFrame(brake_frame_.x, brake_frame_.y, 
-                    brake_frame_.width, brake_frame_.height);
-    //QFrame_vector[3]           
-    createFrame(steer_frame_.x, steer_frame_.y, 
-                    steer_frame_.width, steer_frame_.height);
-    //QFrame_vector[4]           
-    createFrame(throttle_frame_.x, throttle_frame_.y, 
-                    throttle_frame_.width, throttle_frame_.height);
-    //QFrame_vector[5]
-    createFrame(BPS_frame_.x, BPS_frame_.y, 
-                    BPS_frame_.width, BPS_frame_.height);
-    //QFrame_vector[6]           
-    createFrame(STS_frame_.x, STS_frame_.y, 
-                    STS_frame_.width, STS_frame_.height);
-    //QFrame_vector[7]           
-    createFrame(APS_frame_.x, APS_frame_.y, 
-                    APS_frame_.width, APS_frame_.height);
-    //QFrame_vector[8]           
-    createFrame(adma_gnss_mode_frame_.x, adma_gnss_mode_frame_.y, 
-                    adma_gnss_mode_frame_.width, adma_gnss_mode_frame_.height);
-
-
-
+    createFrame(localization_accuracy_frame_); //QFrame_vector[0]
+    createFrame(localization_accuracy_lateral_direction_frame_); //QFrame_vector[1]
+    createFrame(brake_frame_); //QFrame_vector[2]
+    createFrame(steer_frame_); //QFrame_vector[3]
+    createFrame(throttle_frame_); //QFrame_vector[4]
+    createFrame(BPS_frame_); //QFrame_vector[5]
+    createFrame(STS_frame_); //QFrame_vector[6]
+    createFrame(APS_frame_); //QFrame_vector[7]
+    createFrame(adma_gnss_mode_frame_); //QFrame_vector[8] 
 
     /** [Create label]
      * 1. Create label variable with basic setting {pos_x, pos_y, size_x, size_y, text}. see struct Label_info
@@ -147,58 +109,22 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     ADMA_status_label_ = {73, 249, 60, 30, "Off"};
     Ouster_status_label_ = {73, 330, 60, 30, "Off"};
 
-    //QLabel_vector[0]               
-    createLabel(localization_accuracy_label_.x, localization_accuracy_label_.y, 
-                    localization_accuracy_label_.width, localization_accuracy_label_.height, localization_accuracy_label_.text);
-    //QLabel_vector[1]
-    createLabel(localization_accuracy_lateral_direction_label_.x, localization_accuracy_lateral_direction_label_.y, 
-                    localization_accuracy_lateral_direction_label_.width, 
-                    localization_accuracy_lateral_direction_label_.height, localization_accuracy_lateral_direction_label_.text);
-    //QLabel_vector[2]
-    createLabel(ROSCCO_label_.x, ROSCCO_label_.y, 
-                    ROSCCO_label_.width, ROSCCO_label_.height, ROSCCO_label_.text);
-    //QLabel_vector[3]
-    createLabel(brake_label_.x, brake_label_.y, 
-                    brake_label_.width, brake_label_.height, brake_label_.text);    
-    //QLabel_vector[4]
-    createLabel(steer_label_.x, steer_label_.y, 
-                    steer_label_.width, steer_label_.height, steer_label_.text);    
-    //QLabel_vector[5]
-    createLabel(throttle_label_.x, throttle_label_.y, 
-                    throttle_label_.width, throttle_label_.height, throttle_label_.text);
-    //QLabel_vector[6]
-    createLabel(BPS_label_.x, BPS_label_.y, 
-                    BPS_label_.width, BPS_label_.height, BPS_label_.text);    
-    //QLabel_vector[7]
-    createLabel(STS_label_.x, STS_label_.y, 
-                    STS_label_.width, STS_label_.height, STS_label_.text);    
-    //QLabel_vector[8]
-    createLabel(APS_label_.x, APS_label_.y, 
-                    APS_label_.width, APS_label_.height, APS_label_.text);
-    //QLabel_vector[9]
-    createLabel(autoware_label_.x, autoware_label_.y, 
-                    autoware_label_.width, autoware_label_.height, autoware_label_.text);
-    //QLabel_vector[10]
-    createLabel(ADMA_label_.x, ADMA_label_.y, 
-                    ADMA_label_.width, ADMA_label_.height, ADMA_label_.text);
-    //QLabel_vector[11]
-    createLabel(ADMA_GNSS_mode_label_.x, ADMA_GNSS_mode_label_.y, 
-                    ADMA_GNSS_mode_label_.width, ADMA_GNSS_mode_label_.height, ADMA_GNSS_mode_label_.text);  
-    //QLabel_vector[12]
-    createLabel(Ouster_label_.x, Ouster_label_.y, 
-                    Ouster_label_.width, Ouster_label_.height, Ouster_label_.text);  
-    //QLabel_vector[13]
-    createLabel(ROSCCO_status_label_.x, ROSCCO_status_label_.y, 
-                    ROSCCO_status_label_.width, ROSCCO_status_label_.height, ROSCCO_status_label_.text);  
-    //QLabel_vector[14]
-    createLabel(ADMA_status_label_.x, ADMA_status_label_.y, 
-                    ADMA_status_label_.width, ADMA_status_label_.height, ADMA_status_label_.text);  
-    //QLabel_vector[15]
-    createLabel(Ouster_status_label_.x, Ouster_status_label_.y, 
-                    Ouster_status_label_.width, Ouster_status_label_.height, Ouster_status_label_.text);  
-
-
-
+    createLabel(localization_accuracy_label_); //QLabel_vector[0]
+    createLabel(localization_accuracy_lateral_direction_label_); //QLabel_vector[1]
+    createLabel(ROSCCO_label_); //QLabel_vector[2]
+    createLabel(brake_label_); //QLabel_vector[3]
+    createLabel(steer_label_); //QLabel_vector[4]
+    createLabel(throttle_label_); //QLabel_vector[5]
+    createLabel(BPS_label_); //QLabel_vector[6]
+    createLabel(STS_label_); //QLabel_vector[7]
+    createLabel(APS_label_); //QLabel_vector[8]
+    createLabel(autoware_label_); //QLabel_vector[9]
+    createLabel(ADMA_label_); //QLabel_vector[10]
+    createLabel(ADMA_GNSS_mode_label_); //QLabel_vector[11]
+    createLabel(Ouster_label_); //QLabel_vector[12]
+    createLabel(ROSCCO_status_label_); //QLabel_vector[13]
+    createLabel(ADMA_status_label_); //QLabel_vector[14]
+    createLabel(Ouster_status_label_); //QLabel_vector[15]
 
     /** [Start timer]
     */ 
@@ -363,11 +289,11 @@ void Qtmain::updateSensorStatusMonitor()
     else QLabel_vector[15]->setText(QString("Off"));
 }
 
-void Qtmain::createFrame(const int& x, const int& y, const int& width, const int& height)
+void Qtmain::createFrame(const Frame_info frame_info)
 {
     QFrame *newFrame = new QFrame(this);
 
-    newFrame->setGeometry(x, y, width, height);
+    newFrame->setGeometry(frame_info.x, frame_info.y, frame_info.width, frame_info.height);
     newFrame->setLineWidth(2);
     newFrame->setStyleSheet("background-color: #efefef;");
     newFrame->setFrameShape(QFrame::Box);
@@ -376,27 +302,25 @@ void Qtmain::createFrame(const int& x, const int& y, const int& width, const int
     QFrame_vector.push_back(newFrame);
 }
 
-void Qtmain::createLabel(const int& x, const int& y, const int& width,
-    const int& height, const std::string& text)
+void Qtmain::createLabel(const Label_info label_info)
 {
-    QString qText = QString::fromStdString(text);
+    QString qText = QString::fromStdString(label_info.text);
 
     QLabel *newLabel = new QLabel(qText, this);
 
-    newLabel->setGeometry(x, y, width, height);
+    newLabel->setGeometry(label_info.x, label_info.y, label_info.width, label_info.height);
     
     newLabel->show();
     QLabel_vector.push_back(newLabel);
 }
 
-void Qtmain::create_btn(const int& x, const int& y, const int& width,
-    const int& height, const std::string& text)
+void Qtmain::create_btn(const Label_info btn_info)
 {
-    QString qText = QString::fromStdString(text);
+    QString qText = QString::fromStdString(btn_info.text);
 
     QPushButton *Btn = new QPushButton(qText, this);
 
-    Btn->setGeometry(x, y, width, height);
+    Btn->setGeometry(btn_info.x, btn_info.y, btn_info.width, btn_info.height);
     Btn->show();
     QPushButton_vector.push_back(Btn);
 }

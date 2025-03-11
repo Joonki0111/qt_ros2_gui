@@ -81,9 +81,7 @@ class Qtmain : public QWidget
         void updateLocalizationMonitor(const std::pair<float, float> localization_accuracy);
         void updateGNSSModeMonitor(const int gnss_mode);
         void updateSensorStatusMonitor();
-        void createFrame(const int& x, const int& y, const int& width, const int& height);
-        void createLabel(const int& x, const int& y, const int& width,
-            const int& height, const std::string& text);
-        void create_btn(const int& x, const int& y, const int& width,
-            const int& height, const std::string& text);
+        void createFrame(const Frame_info frame_info);
+        void createLabel(const Label_info label_info);
+        void create_btn(const Label_info btn_info);
 };
