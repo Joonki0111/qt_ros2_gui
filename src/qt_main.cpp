@@ -1,7 +1,5 @@
 #include "qt_ros2_gui/qt_main.hpp"
 
-// RCLCPP_INFO(rclcpp::get_logger("test"),"%d", main_Btn_state);
-
 Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWidget(parent_), ros2_node(ros2_node_)
 {
     /** [Adjust size & position of the window]
@@ -21,7 +19,7 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
      * TODO: set appropriate interval speed.
     */
     timer_ = new QTimer(this);
-    timer_->setInterval(20); 
+    timer_->setInterval(100); 
     connect(timer_, &QTimer::timeout, this, &Qtmain::TimerCallback);
 
 
@@ -229,10 +227,12 @@ void Qtmain::ROSCCODisableBtnCallback()
 
 void Qtmain::TimerCallback()
 {   
-    float* localization_accuracy = ros2_node->updateLocalizationAccuracy();
+    const std::pair<float, float> localization_accuracy = ros2_node->updateLocalizationAccuracy();
     updateLocalizationMonitor(localization_accuracy);
     updateRosccoStatusMonitor();
     updateSensorStatusMonitor();
+    const int gnss_mode = ros2_node->updateGNSSMode();
+    updateGNSSModeMonitor(gnss_mode);
 }
 
 void Qtmain::updateRosccoStatusMonitor()
@@ -273,17 +273,17 @@ void Qtmain::updateRosccoStatusMonitor()
     }
 }
 
-void Qtmain::updateLocalizationMonitor(float* localization_accuracy)
+void Qtmain::updateLocalizationMonitor(const std::pair<float, float> localization_accuracy)
 {
-    if(localization_accuracy[0] > 0.15)
+    if(localization_accuracy.first > 0.15f)
     {
         QFrame_vector[0]->setStyleSheet("background-color: red;");
     }
-    else if(localization_accuracy[0] <= 0.15 && localization_accuracy[0] > 0.1)
+    else if(localization_accuracy.first <= 0.15f && localization_accuracy.first > 0.1f)
     {
         QFrame_vector[0]->setStyleSheet("background-color: yellow;");
     }
-    else if(localization_accuracy[0] <= 0.1 && localization_accuracy[0] > 0)
+    else if(localization_accuracy.first <= 0.1f && localization_accuracy.first > 0.0)
     {
         QFrame_vector[0]->setStyleSheet("background-color: #00FF00;");
     }
@@ -292,15 +292,15 @@ void Qtmain::updateLocalizationMonitor(float* localization_accuracy)
         QFrame_vector[0]->setStyleSheet("background-color: red;");
     }
 
-    if(localization_accuracy[1] > 0.15)
+    if(localization_accuracy.second > 0.15f)
     {
         QFrame_vector[1]->setStyleSheet("background-color: red;");
     }
-    else if(localization_accuracy[1] <= 0.15 && localization_accuracy[1] > 0.1)
+    else if(localization_accuracy.second <= 0.15f && localization_accuracy.second > 0.1f)
     {
         QFrame_vector[1]->setStyleSheet("background-color: yellow;");
     }
-    else if(localization_accuracy[1] <= 0.1 && localization_accuracy[1] > 0)
+    else if(localization_accuracy.second <= 0.1f && localization_accuracy.second > 0.0)
     {
         QFrame_vector[1]->setStyleSheet("background-color: #00FF00;");
     }
@@ -309,11 +309,11 @@ void Qtmain::updateLocalizationMonitor(float* localization_accuracy)
         QFrame_vector[1]->setStyleSheet("background-color: red;");
     }
 
-    QString localization_accuracy_text = QString("localization_accuracy: %1").arg(localization_accuracy[0]);
+    QString localization_accuracy_text = QString("localization_accuracy: %1").arg(localization_accuracy.first);
     QLabel_vector[0]->setText(localization_accuracy_text);
 
     QString localization_accuracy_lateral_direction_text = QString(
-        "localization_accuracy_LD: %1").arg(localization_accuracy[1]);
+        "localization_accuracy_LD: %1").arg(localization_accuracy.second);
     QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
 }
 
@@ -325,28 +325,28 @@ void Qtmain::updateGNSSModeMonitor(const int gnss_mode)
     {
         case 1:
             gnss_mode_text = "error";
-            QFrame_vector[5]->setStyleSheet("background-color: red");
+            QFrame_vector[8]->setStyleSheet("background-color: red");
             break;
         case 2:
             gnss_mode_text = "GNSS";
-            QFrame_vector[5]->setStyleSheet("background-color: orange");
+            QFrame_vector[8]->setStyleSheet("background-color: orange");
             break;
         case 4:
             gnss_mode_text = "DGNSS";
-            QFrame_vector[5]->setStyleSheet("background-color: yellow");
+            QFrame_vector[8]->setStyleSheet("background-color: yellow");
             break;
         case 8:
             gnss_mode_text = "RTK";
-            QFrame_vector[5]->setStyleSheet("background-color: #00FF00");
+            QFrame_vector[8]->setStyleSheet("background-color: #00FF00");
             break;
         default:
             gnss_mode_text = "error";
-            QFrame_vector[5]->setStyleSheet("background-color: red");
+            QFrame_vector[8]->setStyleSheet("background-color: red");
             break;           
     }
 
     QString gnss_mode_text_qt = QString("gnss_mode: %1").arg(gnss_mode_text);
-    QLabel_vector[8]->setText(gnss_mode_text_qt);
+    QLabel_vector[11]->setText(gnss_mode_text_qt);
 }
 
 void Qtmain::updateSensorStatusMonitor()

@@ -3,8 +3,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include "std_msgs/msg/bool.hpp"
-#include "std_msgs/msg/float32_multi_array.hpp"
-#include "autoware_auto_vehicle_msgs/msg/control_mode_report.hpp"
+#include "autoware_localization_msgs/msg/localization_accuracy.hpp"
 #include "autoware_adapi_v1_msgs/srv/change_operation_mode.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "std_msgs/msg/header.hpp"
@@ -30,19 +29,21 @@ public:
         rclcpp::Time current_time;
     };
 
+    int gnss_mode_ = 0;
+
     explicit ROS2();
     void ReqAutowareOperationMode(const bool auto_mode);
-    float* updateLocalizationAccuracy();
+    std::pair<float, float> updateLocalizationAccuracy();
     void pubROSCCOEnableDisable(const bool enable_roscco);
     SensorStatus updateSensorStatus();
     ROSCCOStatus updateROSCCOStatus();
+    int updateGNSSMode();
 
 private:
     rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr pub_trigger_;
-    rclcpp::Publisher<autoware_auto_vehicle_msgs::msg::ControlModeReport>::SharedPtr autoware_control_pub_;
     rclcpp::Publisher<roscco_msgs::msg::EnableDisable>::SharedPtr ROSCCO_enable_disable_pub_;
 
-    rclcpp::Subscription<std_msgs::msg::Float32MultiArray>::SharedPtr localization_accuracy_sub_;
+    rclcpp::Subscription<autoware_localization_msgs::msg::LocalizationAccuracy>::SharedPtr localization_accuracy_sub_;
     rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr ouster_clock_sub_;
     rclcpp::Subscription<std_msgs::msg::Header>::SharedPtr roscco_clock_sub_;
     rclcpp::Subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>::SharedPtr adma_data_sub_;
@@ -53,17 +54,17 @@ private:
 
     rclcpp::TimerBase::SharedPtr timer_;
 
-    float localization_accuracy_ = 0.0;
+    float localization_accuracy_long_radius_ = 0.0;
     float localization_accuracy_lateral_direction_ = 0.0;
     SensorStatus sensor_status_{};
     ROSCCOStatus roscco_status_{};
 
-    void LocalizationAccuracyCallback(const std_msgs::msg::Float32MultiArray::SharedPtr msg);
+    void TimerCallback();
+    void LocalizationAccuracyCallback(const autoware_localization_msgs::msg::LocalizationAccuracy::SharedPtr msg);
     void OusterClockCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg);
     void ROSCCOCallback(const std_msgs::msg::Header::SharedPtr msg);
     void ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::SharedPtr msg);
     void ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg);
-    void TimerCallback();
 };
 
 #endif

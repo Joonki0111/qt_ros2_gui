@@ -78,7 +78,7 @@ class Qtmain : public QWidget
         void ROSCCOEnableBtnCallback();
         void ROSCCODisableBtnCallback();
         void updateRosccoStatusMonitor();
-        void updateLocalizationMonitor(float* localization_accuracy);
+        void updateLocalizationMonitor(const std::pair<float, float> localization_accuracy);
         void updateGNSSModeMonitor(const int gnss_mode);
         void updateSensorStatusMonitor();
         void createFrame(const int& x, const int& y, const int& width, const int& height);

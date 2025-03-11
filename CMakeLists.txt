@@ -8,13 +8,13 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(std_msgs REQUIRED)
-find_package(autoware_auto_vehicle_msgs REQUIRED)
 find_package(autoware_adapi_v1_msgs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
 find_package(adma_ros_driver_msgs REQUIRED)
 find_package(roscco_msgs REQUIRED)
+find_package(autoware_localization_msgs REQUIRED)
 
 include_directories(include)
 
@@ -35,11 +35,11 @@ ament_target_dependencies(
   ros2_main
   rclcpp
   std_msgs
-  autoware_auto_vehicle_msgs
   autoware_adapi_v1_msgs
   rosgraph_msgs
   adma_ros_driver_msgs
   roscco_msgs
+  autoware_localization_msgs
 )
 ament_target_dependencies(
   qt_main
