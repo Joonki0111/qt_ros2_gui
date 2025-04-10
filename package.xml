@@ -9,7 +9,6 @@
   <buildtool_depend>ament_cmake</buildtool_depend>
 
   <depend>rclcpp</depend>
-  <depend>Qt5</depend>
 
   <build_depend>adma_ros_driver_msgs</build_depend>
   <build_depend>autoware_adapi_v1_msgs</build_depend>
