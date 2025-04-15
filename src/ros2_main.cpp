@@ -1,9 +1,9 @@
 #include "qt_ros2_gui/ros2_main.hpp"
 
-ROS2::ROS2() : Node("node")
+ROS2::ROS2() : Node("qt_ros2_node")
 {
     ROSCCO_enable_disable_pub_ = this->create_publisher<roscco_msgs::msg::EnableDisable>(
-        "/enable_disable", rclcpp::QoS(1));
+        "/roscco/enable_disable", rclcpp::QoS(1));
 
     localization_accuracy_sub_ = this->create_subscription<autoware_localization_msgs::msg::LocalizationAccuracy>(
         "/localization_accuracy", rclcpp::QoS(1), std::bind(
@@ -11,7 +11,7 @@ ROS2::ROS2() : Node("node")
     ouster_clock_sub_ = this->create_subscription<rosgraph_msgs::msg::Clock>
         ("/sensing/ouster/clock", 10, std::bind(&ROS2::OusterClockCallback, this, std::placeholders::_1));
     roscco_clock_sub_ = this->create_subscription<std_msgs::msg::Header>
-        ("/time_from_roscco", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
+        ("/roscco/clock", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
     adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
         ("/sensing/genesys/adma/data_scaled", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
     ROSCCO_status_sub_ = this->create_subscription<roscco_msgs::msg::RosccoStatus>
