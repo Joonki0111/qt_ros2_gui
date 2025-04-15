@@ -95,37 +95,36 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     autoware_label_ = {3, 0, 250, 30, "[Autoware]"};
     localization_accuracy_label_ = {3, 31, 250, 30, "localization_accuracy: 0"};
     localization_accuracy_lateral_direction_label_ = {3, 61, 250, 30, "localization_accuracy_LD: 0"};
-    ROSCCO_label_ = {3, 110, 70, 30, "[ROSCCO]"};
+    ROSCCO_label_ = {3, 110, 180, 30, "[ROSCCO]     Off"};
     brake_label_ = {3, 140, 130, 30, "Brake Disabled"};
     steer_label_ = {3, 170, 130, 30, "Steer Disabled"};
     throttle_label_ = {3, 200, 130, 30, "Throttle Disabled"};
     BPS_label_ = {153, 140, 100, 30, "BPS: 0"};
     STS_label_ = {153, 170, 100, 30, "STS: 0"};
     APS_label_ = {153, 200, 100, 30, "APS: 0"};
-    ADMA_label_ = {3, 249, 60, 30, "[ADMA]"};
+    ADMA_label_ = {3, 249, 180, 30, "[ADMA]     Off"};
     ADMA_GNSS_mode_label_ = {3, 280, 150, 30, "gnss_mode: 0"};
-    Ouster_label_ = {3, 330, 60, 30, "[Ouster]"};
-    ROSCCO_status_label_ = {83, 110, 30, 30, "Off"};
-    ADMA_status_label_ = {73, 249, 60, 30, "Off"};
-    Ouster_status_label_ = {73, 330, 60, 30, "Off"};
+    Ouster_label_ = {3, 330, 180, 30, "[Ouster]     Off"};
+    TC_status_label_ = {3, 400, 180, 30, "[TwistController]     Off"};
+    ROSCCO_CAN_status_label_ = {3, 500, 150, 30, "[ROSCCO CAN]     Off"};
+    vehicle_CAN_status_label_ = {3, 600, 150, 30, "[vehicle CAN]     Off"};
 
-    createLabel(localization_accuracy_label_); //QLabel_vector[0]
-    createLabel(localization_accuracy_lateral_direction_label_); //QLabel_vector[1]
-    createLabel(ROSCCO_label_); //QLabel_vector[2]
-    createLabel(brake_label_); //QLabel_vector[3]
-    createLabel(steer_label_); //QLabel_vector[4]
-    createLabel(throttle_label_); //QLabel_vector[5]
-    createLabel(BPS_label_); //QLabel_vector[6]
-    createLabel(STS_label_); //QLabel_vector[7]
-    createLabel(APS_label_); //QLabel_vector[8]
-    createLabel(autoware_label_); //QLabel_vector[9]
+    createLabel(autoware_label_); //QLabel_vector[0]
+    createLabel(localization_accuracy_label_); //QLabel_vector[1]
+    createLabel(localization_accuracy_lateral_direction_label_); //QLabel_vector[2]
+    createLabel(ROSCCO_label_); //QLabel_vector[3]
+    createLabel(brake_label_); //QLabel_vector[4]
+    createLabel(steer_label_); //QLabel_vector[5]
+    createLabel(throttle_label_); //QLabel_vector[6]
+    createLabel(BPS_label_); //QLabel_vector[7]
+    createLabel(STS_label_); //QLabel_vector[8]
+    createLabel(APS_label_); //QLabel_vector[9]
     createLabel(ADMA_label_); //QLabel_vector[10]
     createLabel(ADMA_GNSS_mode_label_); //QLabel_vector[11]
     createLabel(Ouster_label_); //QLabel_vector[12]
-    createLabel(ROSCCO_status_label_); //QLabel_vector[13]
-    createLabel(ADMA_status_label_); //QLabel_vector[14]
-    createLabel(Ouster_status_label_); //QLabel_vector[15]
-
+    createLabel(TC_status_label_); //QLabel_vector[13]
+    createLabel(ROSCCO_CAN_status_label_); //QLabel_vector[14]
+    createLabel(vehicle_CAN_status_label_); //QLabel_vector[15]
     /** [Start timer]
     */ 
     timer_->start();
@@ -167,34 +166,34 @@ void Qtmain::updateRosccoStatusMonitor()
 
     if(roscco_status.is_brake_enabled)
     {
-        QLabel_vector[3]->setText(QString("Brake Enabled"));
+        QLabel_vector[4]->setText(QString("Brake Enabled"));
         QFrame_vector[2]->setStyleSheet("background-color: #00FF00;");
     }
     else
     {
-        QLabel_vector[3]->setText(QString("Brake Disabled"));
+        QLabel_vector[4]->setText(QString("Brake Disabled"));
         QFrame_vector[2]->setStyleSheet("background-color: red;");
     }
 
     if(roscco_status.is_steer_enabled)
     {
-        QLabel_vector[4]->setText(QString("Steer Enabled"));
+        QLabel_vector[5]->setText(QString("Steer Enabled"));
         QFrame_vector[3]->setStyleSheet("background-color: #00FF00;");
     }
     else
     {
-        QLabel_vector[4]->setText(QString("Steer Disabled"));
+        QLabel_vector[5]->setText(QString("Steer Disabled"));
         QFrame_vector[3]->setStyleSheet("background-color: red;");
     }
         
     if(roscco_status.is_throttle_enabled)
     {
-        QLabel_vector[5]->setText(QString("Throttle Enabled"));
+        QLabel_vector[6]->setText(QString("Throttle Enabled"));
         QFrame_vector[4]->setStyleSheet("background-color: #00FF00;");
     }
     else
     {
-        QLabel_vector[5]->setText(QString("Throttle Disabled"));
+        QLabel_vector[6]->setText(QString("Throttle Disabled"));
         QFrame_vector[4]->setStyleSheet("background-color: red;");
     }
 }
@@ -236,11 +235,11 @@ void Qtmain::updateLocalizationMonitor(const std::pair<float, float> localizatio
     }
 
     QString localization_accuracy_text = QString("localization_accuracy: %1").arg(localization_accuracy.first);
-    QLabel_vector[0]->setText(localization_accuracy_text);
+    QLabel_vector[1]->setText(localization_accuracy_text);
 
     QString localization_accuracy_lateral_direction_text = QString(
         "localization_accuracy_LD: %1").arg(localization_accuracy.second);
-    QLabel_vector[1]->setText(localization_accuracy_lateral_direction_text);
+    QLabel_vector[2]->setText(localization_accuracy_lateral_direction_text);
 }
 
 void Qtmain::updateGNSSModeMonitor(const int gnss_mode)
@@ -279,14 +278,29 @@ void Qtmain::updateComponentStatusMonitor()
 {
     ROS2::ComponentStatus component_status = ros2_node->updateComponentStatus();
     
-    if(component_status.is_ROSCCO_active) QLabel_vector[13]->setText(QString("On"));
-    else QLabel_vector[13]->setText(QString("Off"));
+    // ROSCCO status
+    if (component_status.is_ROSCCO_active) QLabel_vector[3]->setText(QString("<font color='green'>[ROSCCO]     On</font>"));
+    else QLabel_vector[3]->setText(QString("<font color='red'>[ROSCCO]     Off</font>"));
 
-    if(component_status.is_ADMA_active) QLabel_vector[14]->setText(QString("On"));
-    else QLabel_vector[14]->setText(QString("Off"));
+    // ADMA status
+    if (component_status.is_ADMA_active) QLabel_vector[10]->setText(QString("<font color='green'>[ADMA]     On</font>"));
+    else QLabel_vector[10]->setText(QString("<font color='red'>[ADMA]     Off</font>"));
 
-    if(component_status.is_Ouster_active) QLabel_vector[15]->setText(QString("On"));
-    else QLabel_vector[15]->setText(QString("Off"));
+    // Ouster status
+    if (component_status.is_Ouster_active) QLabel_vector[12]->setText(QString("<font color='green'>[Ouster]     On</font>"));
+    else QLabel_vector[12]->setText(QString("<font color='red'>[Ouster]     Off</font>"));
+
+    // TwistController status
+    if (component_status.is_TC_active) QLabel_vector[13]->setText(QString("<font color='green'>[TwistController]     On</font>"));
+    else QLabel_vector[13]->setText(QString("<font color='red'>[TwistController]     Off</font>"));
+
+    // ROSCCO CAN status
+    if (component_status.is_ROSCCO_CAN_active) QLabel_vector[14]->setText(QString("<font color='green'>[ROSCCO CAN]     On</font>"));
+    else QLabel_vector[14]->setText(QString("<font color='red'>[ROSCCO CAN]     Off</font>"));
+
+    // Vehicle CAN status
+    if (component_status.is_vehicle_CAN_active) QLabel_vector[15]->setText(QString("<font color='green'>[vehicle CAN]     On</font>"));
+    else QLabel_vector[15]->setText(QString("<font color='red'>[vehicle CAN]     Off</font>"));
 }
 
 void Qtmain::createFrame(const Frame_info frame_info)

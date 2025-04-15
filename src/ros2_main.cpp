@@ -31,7 +31,12 @@ void ROS2::LocalizationAccuracyCallback(const autoware_localization_msgs::msg::L
 
 void ROS2::ComponentStatusCallback(const autoware_system_msgs::msg::ComponentStatus::SharedPtr msg)
 {
-    component_status_.is_ROSCCO_active = true;
+    component_status_.is_Ouster_active = msg->is_os_alive;
+    component_status_.is_ROSCCO_active = msg->is_roscco_alive;
+    component_status_.is_ADMA_active = msg->is_adma_alive;
+    component_status_.is_TC_active = msg->is_tc_alive;
+    component_status_.is_ROSCCO_CAN_active = msg->is_roscco_can_alive;
+    component_status_.is_vehicle_CAN_active = msg->is_vehicle_can_alive;
 }
 
 void ROS2::ADMADataCallback(const std_msgs::msg::Int8::SharedPtr msg)
