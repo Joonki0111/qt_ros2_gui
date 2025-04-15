@@ -7,9 +7,10 @@
 #include "autoware_adapi_v1_msgs/srv/change_operation_mode.hpp"
 #include "rosgraph_msgs/msg/clock.hpp"
 #include "std_msgs/msg/header.hpp"
-#include "adma_ros_driver_msgs/msg/adma_data_scaled.hpp"
+#include "std_msgs/msg/int8.hpp"
 #include "roscco_msgs/msg/enable_disable.hpp"
 #include "roscco_msgs/msg/roscco_status.hpp"
+#include "autoware_system_msgs/msg/component_status.hpp"
 
 class ROS2 : public rclcpp::Node
 {
@@ -21,12 +22,14 @@ public:
         bool is_throttle_enabled = false;
     };
 
-    struct SensorStatus
+    struct ComponentStatus
     {
         bool is_Ouster_active{false};
         bool is_ROSCCO_active{false};
         bool is_ADMA_active{false};
-        rclcpp::Time current_time;
+        bool is_TC_active{false};
+        bool is_ROSCCO_CAN_active{false};
+        bool is_vehicle_CAN_active{false};
     };
 
     int gnss_mode_ = 0;
@@ -35,7 +38,7 @@ public:
     void ReqAutowareOperationMode(const bool auto_mode);
     std::pair<float, float> updateLocalizationAccuracy();
     void pubROSCCOEnableDisable(const bool enable_roscco);
-    SensorStatus updateSensorStatus();
+    ComponentStatus updateComponentStatus();
     ROSCCOStatus updateROSCCOStatus();
     int updateGNSSMode();
 
@@ -44,9 +47,8 @@ private:
     rclcpp::Publisher<roscco_msgs::msg::EnableDisable>::SharedPtr ROSCCO_enable_disable_pub_;
 
     rclcpp::Subscription<autoware_localization_msgs::msg::LocalizationAccuracy>::SharedPtr localization_accuracy_sub_;
-    rclcpp::Subscription<rosgraph_msgs::msg::Clock>::SharedPtr ouster_clock_sub_;
-    rclcpp::Subscription<std_msgs::msg::Header>::SharedPtr roscco_clock_sub_;
-    rclcpp::Subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>::SharedPtr adma_data_sub_;
+    rclcpp::Subscription<autoware_system_msgs::msg::ComponentStatus>::SharedPtr component_status_sub_;
+    rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr adma_gnss_mode_sub_;
     rclcpp::Subscription<roscco_msgs::msg::RosccoStatus>::SharedPtr ROSCCO_status_sub_;
 
     rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr AW_auto_client;
@@ -56,14 +58,13 @@ private:
 
     float localization_accuracy_long_radius_ = 0.0;
     float localization_accuracy_lateral_direction_ = 0.0;
-    SensorStatus sensor_status_{};
+    ComponentStatus component_status_{};
     ROSCCOStatus roscco_status_{};
 
     void TimerCallback();
     void LocalizationAccuracyCallback(const autoware_localization_msgs::msg::LocalizationAccuracy::SharedPtr msg);
-    void OusterClockCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg);
-    void ROSCCOCallback(const std_msgs::msg::Header::SharedPtr msg);
-    void ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::SharedPtr msg);
+    void ComponentStatusCallback(const autoware_system_msgs::msg::ComponentStatus::SharedPtr msg);
+    void ADMADataCallback(const std_msgs::msg::Int8::SharedPtr msg);
     void ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg);
 };
 

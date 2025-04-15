@@ -8,14 +8,12 @@ ROS2::ROS2() : Node("qt_ros2_node")
     localization_accuracy_sub_ = this->create_subscription<autoware_localization_msgs::msg::LocalizationAccuracy>(
         "/localization_accuracy", rclcpp::QoS(1), std::bind(
             &ROS2::LocalizationAccuracyCallback, this, std::placeholders::_1));   
-    ouster_clock_sub_ = this->create_subscription<rosgraph_msgs::msg::Clock>
-        ("/sensing/ouster/clock", 10, std::bind(&ROS2::OusterClockCallback, this, std::placeholders::_1));
-    roscco_clock_sub_ = this->create_subscription<std_msgs::msg::Header>
-        ("/roscco/clock", 10, std::bind(&ROS2::ROSCCOCallback, this, std::placeholders::_1));
-    adma_data_sub_ = this->create_subscription<adma_ros_driver_msgs::msg::AdmaDataScaled>
-        ("/sensing/genesys/adma/data_scaled", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
+    adma_gnss_mode_sub_ = this->create_subscription<std_msgs::msg::Int8>
+        ("/genesys/adma/gnss_mode", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
     ROSCCO_status_sub_ = this->create_subscription<roscco_msgs::msg::RosccoStatus>
         ("/roscco/status", rclcpp::QoS(1), std::bind(&ROS2::ROSCCOStatusCallback, this, std::placeholders::_1));
+    component_status_sub_ = this->create_subscription<autoware_system_msgs::msg::ComponentStatus>
+        ("/system/status/component_status", rclcpp::QoS(1), std::bind(&ROS2::ComponentStatusCallback, this, std::placeholders::_1));
 
     AW_auto_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
     AW_stop_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_stop");
@@ -31,51 +29,14 @@ void ROS2::LocalizationAccuracyCallback(const autoware_localization_msgs::msg::L
     localization_accuracy_lateral_direction_ = std::round(msg->lateral_accuracy * 1000.0) / 1000.0;
 }
 
-void ROS2::OusterClockCallback(const rosgraph_msgs::msg::Clock::SharedPtr msg)
+void ROS2::ComponentStatusCallback(const autoware_system_msgs::msg::ComponentStatus::SharedPtr msg)
 {
-    sensor_status_.current_time = this->now();
-    rclcpp::Time Ouster_time = msg->clock;
-    const double dt = (sensor_status_.current_time - Ouster_time).seconds();
-    if(std::fabs(dt) > 0.1f)
-    {
-        sensor_status_.is_Ouster_active = false;
-    }
-    else
-    {
-        sensor_status_.is_Ouster_active = true;
-    }
+    component_status_.is_ROSCCO_active = true;
 }
 
-void ROS2::ROSCCOCallback(const std_msgs::msg::Header::SharedPtr msg)
+void ROS2::ADMADataCallback(const std_msgs::msg::Int8::SharedPtr msg)
 {
-    sensor_status_.current_time = this->now();
-    rclcpp::Time ROSCCO_time = msg->stamp;
-    const double dt = (sensor_status_.current_time - ROSCCO_time).seconds();
-    if(std::fabs(dt) > 0.1f)
-    {
-        sensor_status_.is_ROSCCO_active = false;
-    }
-    else
-    {
-        sensor_status_.is_ROSCCO_active = true;
-    }
-}
-
-void ROS2::ADMADataCallback(const adma_ros_driver_msgs::msg::AdmaDataScaled::SharedPtr msg)
-{
-    sensor_status_.current_time = this->now();
-    rclcpp::Time ADMA_time = msg->header.stamp;
-    const double dt = (sensor_status_.current_time - ADMA_time).seconds();
-    if(std::fabs(dt) > 0.1f)
-    {
-        sensor_status_.is_ADMA_active = false;
-    }
-    else
-    {
-        sensor_status_.is_ADMA_active = true;
-    }
-
-    gnss_mode_ = msg->status.status_gnss_mode;
+    gnss_mode_ = msg->data;
 }
 
 void ROS2::ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg)
@@ -118,9 +79,9 @@ void ROS2::pubROSCCOEnableDisable(const bool enable_roscco)
     ROSCCO_enable_disable_pub_->publish(msg);
 }
 
-ROS2::SensorStatus ROS2::updateSensorStatus()
+ROS2::ComponentStatus ROS2::updateComponentStatus()
 {
-    return sensor_status_;
+    return component_status_;
 }
 
 ROS2::ROSCCOStatus ROS2::updateROSCCOStatus()

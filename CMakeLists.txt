@@ -12,9 +12,9 @@ find_package(autoware_adapi_v1_msgs REQUIRED)
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
 find_package(rosgraph_msgs REQUIRED)
-find_package(adma_ros_driver_msgs REQUIRED)
 find_package(roscco_msgs REQUIRED)
 find_package(autoware_localization_msgs REQUIRED)
+find_package(autoware_system_msgs REQUIRED)
 
 include_directories(include)
 
@@ -37,9 +37,9 @@ ament_target_dependencies(
   std_msgs
   autoware_adapi_v1_msgs
   rosgraph_msgs
-  adma_ros_driver_msgs
   roscco_msgs
   autoware_localization_msgs
+  autoware_system_msgs
 )
 ament_target_dependencies(
   qt_main

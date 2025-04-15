@@ -156,7 +156,7 @@ void Qtmain::TimerCallback()
     const std::pair<float, float> localization_accuracy = ros2_node->updateLocalizationAccuracy();
     updateLocalizationMonitor(localization_accuracy);
     updateRosccoStatusMonitor();
-    updateSensorStatusMonitor();
+    updateComponentStatusMonitor();
     const int gnss_mode = ros2_node->updateGNSSMode();
     updateGNSSModeMonitor(gnss_mode);
 }
@@ -275,17 +275,17 @@ void Qtmain::updateGNSSModeMonitor(const int gnss_mode)
     QLabel_vector[11]->setText(gnss_mode_text_qt);
 }
 
-void Qtmain::updateSensorStatusMonitor()
+void Qtmain::updateComponentStatusMonitor()
 {
-    ROS2::SensorStatus sensor_status = ros2_node->updateSensorStatus();
+    ROS2::ComponentStatus component_status = ros2_node->updateComponentStatus();
     
-    if(sensor_status.is_ROSCCO_active) QLabel_vector[13]->setText(QString("On"));
+    if(component_status.is_ROSCCO_active) QLabel_vector[13]->setText(QString("On"));
     else QLabel_vector[13]->setText(QString("Off"));
 
-    if(sensor_status.is_ADMA_active) QLabel_vector[14]->setText(QString("On"));
+    if(component_status.is_ADMA_active) QLabel_vector[14]->setText(QString("On"));
     else QLabel_vector[14]->setText(QString("Off"));
 
-    if(sensor_status.is_Ouster_active) QLabel_vector[15]->setText(QString("On"));
+    if(component_status.is_Ouster_active) QLabel_vector[15]->setText(QString("On"));
     else QLabel_vector[15]->setText(QString("Off"));
 }
 
