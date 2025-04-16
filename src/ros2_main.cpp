@@ -9,7 +9,7 @@ ROS2::ROS2() : Node("qt_ros2_node")
         "/localization_accuracy", rclcpp::QoS(1), std::bind(
             &ROS2::LocalizationAccuracyCallback, this, std::placeholders::_1));   
     adma_gnss_mode_sub_ = this->create_subscription<std_msgs::msg::Int8>
-        ("/genesys/adma/gnss_mode", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
+        ("/sensing/genesys/adma/gnss_mode", 10, std::bind(&ROS2::ADMADataCallback, this, std::placeholders::_1));
     ROSCCO_status_sub_ = this->create_subscription<roscco_msgs::msg::RosccoStatus>
         ("/roscco/status", rclcpp::QoS(1), std::bind(&ROS2::ROSCCOStatusCallback, this, std::placeholders::_1));
     component_status_sub_ = this->create_subscription<autoware_system_msgs::msg::ComponentStatus>
