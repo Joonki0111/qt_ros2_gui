@@ -14,6 +14,7 @@
   <build_depend>autoware_adapi_v1_msgs</build_depend>
   <build_depend>autoware_localization_msgs</build_depend>
   <build_depend>roscco_msgs</build_depend>
+  <build_depend>autoware_system_msgs</build_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
