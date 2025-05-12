@@ -108,6 +108,7 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     TC_status_label_ = {3, 400, 180, 30, "[TwistController]     Off"};
     ROSCCO_CAN_status_label_ = {3, 500, 150, 30, "[ROSCCO CAN]     Off"};
     vehicle_CAN_status_label_ = {3, 600, 150, 30, "[vehicle CAN]     Off"};
+    operation_mode_request_failure_label_ = {3, 650, 300, 30, " "};
 
     createLabel(autoware_label_); //QLabel_vector[0]
     createLabel(localization_accuracy_label_); //QLabel_vector[1]
@@ -125,6 +126,7 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
     createLabel(TC_status_label_); //QLabel_vector[13]
     createLabel(ROSCCO_CAN_status_label_); //QLabel_vector[14]
     createLabel(vehicle_CAN_status_label_); //QLabel_vector[15]
+    createLabel(operation_mode_request_failure_label_); //QLabel_vector[16]
     /** [Start timer]
     */ 
     timer_->start();
@@ -132,7 +134,14 @@ Qtmain::Qtmain(const std::shared_ptr<ROS2>& ros2_node_, QWidget *parent_) : QWid
 
 void Qtmain::AWAutoBtnCallback()
 {
-    ros2_node->ReqAutowareOperationMode(true);
+    if(!ros2_node->ReqAutowareOperationMode(true))
+    {
+        QLabel_vector[16]->setText(QString("Failed to request, check steer aligned status"));
+    }
+    else
+    {
+        QLabel_vector[16]->setText(QString(" "));
+    }
 }
 
 void Qtmain::AWStopBtnCallback()

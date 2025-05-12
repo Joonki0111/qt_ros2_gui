@@ -74,7 +74,8 @@ class Qtmain : public QWidget
         Label_info TC_status_label_;
         Label_info ROSCCO_CAN_status_label_;
         Label_info vehicle_CAN_status_label_;
-
+        Label_info operation_mode_request_failure_label_;
+        
         void TimerCallback();
         void AWAutoBtnCallback();
         void AWStopBtnCallback();

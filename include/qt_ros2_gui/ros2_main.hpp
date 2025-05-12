@@ -35,7 +35,7 @@ public:
     int gnss_mode_ = 0;
 
     explicit ROS2();
-    void ReqAutowareOperationMode(const bool auto_mode);
+    bool ReqAutowareOperationMode(const bool auto_mode);
     std::pair<float, float> updateLocalizationAccuracy();
     void pubROSCCOEnableDisable(const bool enable_roscco);
     ComponentStatus updateComponentStatus();
@@ -50,6 +50,7 @@ private:
     rclcpp::Subscription<autoware_system_msgs::msg::ComponentStatus>::SharedPtr component_status_sub_;
     rclcpp::Subscription<std_msgs::msg::Int8>::SharedPtr adma_gnss_mode_sub_;
     rclcpp::Subscription<roscco_msgs::msg::RosccoStatus>::SharedPtr ROSCCO_status_sub_;
+    rclcpp::Subscription<std_msgs::msg::Bool>::SharedPtr steer_aligned_status_sub_;
 
     rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr AW_auto_client;
     rclcpp::Client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>::SharedPtr AW_stop_client;
@@ -60,10 +61,12 @@ private:
     float localization_accuracy_lateral_direction_ = 0.0;
     ComponentStatus component_status_{};
     ROSCCOStatus roscco_status_{};
+    bool is_steer_aligned_ = false;
 
     void TimerCallback();
     void LocalizationAccuracyCallback(const autoware_localization_msgs::msg::LocalizationAccuracy::SharedPtr msg);
     void ComponentStatusCallback(const autoware_system_msgs::msg::ComponentStatus::SharedPtr msg);
+    void SteerAlignedStatusCallback(const std_msgs::msg::Bool msg);
     void ADMADataCallback(const std_msgs::msg::Int8::SharedPtr msg);
     void ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr msg);
 };

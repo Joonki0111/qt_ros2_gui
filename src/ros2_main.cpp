@@ -14,6 +14,8 @@ ROS2::ROS2() : Node("qt_ros2_node")
         ("/roscco/status", rclcpp::QoS(1), std::bind(&ROS2::ROSCCOStatusCallback, this, std::placeholders::_1));
     component_status_sub_ = this->create_subscription<autoware_system_msgs::msg::ComponentStatus>
         ("/system/status/component_status", rclcpp::QoS(1), std::bind(&ROS2::ComponentStatusCallback, this, std::placeholders::_1));
+    steer_aligned_status_sub_ = this->create_subscription<std_msgs::msg::Bool>
+        ("/vehicle/steer_aligned_status", rclcpp::QoS(1), std::bind(&ROS2::SteerAlignedStatusCallback, this, std::placeholders::_1));
 
     AW_auto_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_autonomous");
     AW_stop_client = this->create_client<autoware_adapi_v1_msgs::srv::ChangeOperationMode>("/api/operation_mode/change_to_stop");
@@ -39,6 +41,11 @@ void ROS2::ComponentStatusCallback(const autoware_system_msgs::msg::ComponentSta
     component_status_.is_vehicle_CAN_active = msg->is_vehicle_can_alive;
 }
 
+void ROS2::SteerAlignedStatusCallback(const std_msgs::msg::Bool msg)
+{
+    is_steer_aligned_ = msg.data;
+}
+
 void ROS2::ADMADataCallback(const std_msgs::msg::Int8::SharedPtr msg)
 {
     gnss_mode_ = msg->data;
@@ -51,14 +58,20 @@ void ROS2::ROSCCOStatusCallback(const roscco_msgs::msg::RosccoStatus::SharedPtr 
     roscco_status_.is_throttle_enabled = msg->throttle_status;
 }
 
-void ROS2::ReqAutowareOperationMode(const bool auto_mode)
+bool ROS2::ReqAutowareOperationMode(const bool auto_mode)
 {
     if(auto_mode)
     {
-        std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
-            std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
-        std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
-            AW_auto_client->async_send_request(request);
+        if(is_steer_aligned_)
+        {
+            std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request> request = 
+                std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
+            std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
+                AW_auto_client->async_send_request(request);
+
+            return true;
+        }
+        return false;
     }
     else
     {
@@ -66,7 +79,10 @@ void ROS2::ReqAutowareOperationMode(const bool auto_mode)
             std::make_shared<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Request>();
         std::shared_future<std::shared_ptr<autoware_adapi_v1_msgs::srv::ChangeOperationMode::Response>> result = 
             AW_stop_client->async_send_request(request);
+
+        return true;
     }
+    return false;
 }
 
 std::pair<float, float> ROS2::updateLocalizationAccuracy()
